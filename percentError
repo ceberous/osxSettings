@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser( description='Percent Error Calculator' )
+    parser.add_argument( '-e' , '--experimental' , type=float , help='The Theoretical Value' , required=True )
+    parser.add_argument( '-l','--literature' , type=float , help='The Theoretical Value' , required=True )
+    args = vars( parser.parse_args() )
+    return args
+
+args = parse_args()
+
+percent_error = ( abs( ( args[ 'literature' ] - args[ 'experimental' ] ) / args[ 'literature' ] ) * 100 )
+print( f"Percent Error = {percent_error} %" )

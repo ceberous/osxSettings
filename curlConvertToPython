@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+// https://github.com/NickCarneiro/curlconverter
+const process = require( "process" );
+const path = require( "path" );
+const global_package_path = process.argv[ 0 ].split( "/bin/node" )[ 0 ] + "/lib/node_modules";
+const curlconverter = require( path.join( global_package_path ,  "curlconverter" ) );
+
+let input = process.argv[ 2 ];
+input = input.replace( `--cookie ''` , " " );
+console.log( "" );
+console.log( input );
+console.log( "" );
+const result = curlconverter.toPython( `${ input }` );
+console.log( result );
+console.log( "" );

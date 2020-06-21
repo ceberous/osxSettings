@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# https://serverfault.com/questions/941934/sshfs-over-a-jumphost
+# https://unix.stackexchange.com/questions/388600/automount-sshfs-with-autofs-and-sshpass
+
+sudo umount -f "/Users/morpheous/MOUNT/MediaBox" || echo "" && \
+sudo diskutil unmount force "/Users/morpheous/MOUNT/MediaBox" || echo "" && \
+# Uncomment these if this is the only thing mounted with sshfs and osx is refusing to unmount
+# sudo pkill -9 sshfs && \
+# sudo umount -f "/Users/morpheous/MOUNT/MediaBox" || echo "" && \
+# sudo diskutil unmount force "/Users/morpheous/MOUNT/MediaBox" || echo "" && \
+echo -e "Host relay-main
+\t  HostName 45.77.77.197
+\t  Port 22
+\t  User morphs
+\t  ServerAliveInterval=15
+\t  ServerAliveCountMax=3
+\t  IdentityFile /Users/morpheous/.ssh/relay-main
+Host mediabox
+\t  HostName localhost
+\t  Port 10092
+\t  User morphs
+\t  ServerAliveInterval=15
+\t  ServerAliveCountMax=3
+\t  ProxyJump relay-main" > /tmp/relay-main-mediabox-sshfs-config && \
+sshfs -F /tmp/relay-main-mediabox-sshfs-config \
+-o reconnect,allow_other,defer_permissions \
+mediabox:"/home/morphs/WORKSPACE/" "/Users/morpheous/MOUNT/MediaBox" && \
+rm /tmp/relay-main-mediabox-sshfs-config
+
+
+# Unmount
+# ========
+#!/bin/bash
+# MountTargetFolderPath="/Users/morpheous/MOUNT/MediaBox"
+# sudo umount $MountTargetFolderPath
+# sudo diskutil unmount $MountTargetFolderPath

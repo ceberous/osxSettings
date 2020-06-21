@@ -1,0 +1,5 @@
+#!/bin/bash
+# https://apple.stackexchange.com/a/7077
+echo "Even after this is done, it still takes a couple of minutes for the App Store to notice the changes"
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user
+mdimport /Applications

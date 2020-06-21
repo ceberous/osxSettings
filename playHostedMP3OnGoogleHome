@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+const process = require( "process" );
+const path = require( "path" );
+const global_package_path = process.argv[ 0 ].split( "/bin/node" )[ 0 ] + "/lib/node_modules";
+const Client = require( path.join( global_package_path ,  "castv2-client" ) ).Client;
+const DefaultMediaReceiver = require( path.join( global_package_path ,  "castv2-client" ) ).DefaultMediaReceiver;
+
+let GoogleHomeClient;
+function CONNECT( google_home_ip ) {
+	return new Promise( ( resolve , reject )=> {
+		try {
+			if ( !google_home_ip ) { resolve( false ); return false; }
+			GoogleHomeClient = new Client();
+			GoogleHomeClient.connect( google_home_ip , ()=> {
+				console.log( "connected to google home" );
+				resolve();
+				return;
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); return; }
+	});
+}
+
+function PLAY_HOSTED_MP3( direct_mp3_url ) {
+	return new Promise( ( resolve , reject )=> {
+		try {
+			GoogleHomeClient.launch( DefaultMediaReceiver , ( err , player ) => {
+				const media_mp3 = {
+					contentId: direct_mp3_url ,
+					contentType: "audio/mp3" ,
+					//streamType: "LIVE" ,
+					streamType: "BUFFERED" ,
+				};
+				player.on( "status" , ( status ) => {
+					if ( status ) {
+						if ( status.playerState ) {
+							console.log( status.playerState );
+							if ( status.playerState === "PLAYING" ) {
+								resolve();
+								return;
+							}
+						}
+					}
+				});
+				player.load( media_mp3 , { autoplay: true } , ( error , status ) => {
+					if ( status ) {
+						//console.log( 'media loaded playerState=%s' , status.playerState );
+						const two = 1 + 1;
+					}
+				});
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); return; }
+	});
+}
+
+( async ()=> {
+	const google_home_ip = process.argv[ 2 ];
+	const direct_mp3_url = process.argv[ 3 ];
+	await CONNECT( google_home_ip );
+	await PLAY_HOSTED_MP3( direct_mp3_url );
+	return;
+})();

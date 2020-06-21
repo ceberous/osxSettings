@@ -1,0 +1,3 @@
+#!/bin/bash
+mkdir -p ~/.parked_storage/MicrosoftAutoUpdater
+sudo mv /Library/Application\ Support/Microsoft/MAU2.0/* ~/.parked_storage/MicrosoftAutoUpdate/

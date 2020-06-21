@@ -1,0 +1,54 @@
+#!/bin/bash
+
+services=$(networksetup -listnetworkserviceorder | grep 'Hardware Port')
+
+# scutil --dns
+
+echo ""
+echo "Current Network = "
+while read line; do
+    sname=$(echo $line | awk -F  "(, )|(: )|[)]" '{print $2}')
+    sdev=$(echo $line | awk -F  "(, )|(: )|[)]" '{print $4}')
+    #echo "Current service: $sname, $sdev, $currentservice"
+    if [ -n "$sdev" ]; then
+        ifout="$(ifconfig $sdev 2>/dev/null)"
+        echo "$ifout" | grep 'status: active' > /dev/null 2>&1
+        rc="$?"
+        if [ "$rc" -eq 0 ]; then
+            currentservice="$sname"
+            currentdevice="$sdev"
+            currentmac=$(echo "$ifout" | awk '/ether/{print $2}')
+
+            # may have multiple active devices, so echo it here
+            echo "$currentservice, $currentdevice, $currentmac"
+        fi
+    fi
+done <<< "$(echo "$services")"
+
+if [ -z "$currentservice" ]; then
+    #>&2 echo "Could not find current service"
+    exit 1
+fi
+
+# sudo route change default -interface $currentdevice
+# sudo route change 192.168.0.0/16 -interface $currentdevice
+
+sudo route delete default
+sudo route add default 192.168.0.1
+
+# sudo route delete default -ifscope en0
+# sudo route add default 192.168.1.1 -ifscope en0
+
+echo ""
+echo "Current DNS Config = "
+networksetup -getdnsservers $currentservice
+
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder
+
+# With Pi-Hole setup on Raspberry Pi's IP
+networksetup -setdnsservers Wi-Fi 192.168.0.105  8.8.8.8
+
+echo ""
+echo "New DNS Config = "
+networksetup -getdnsservers $currentservice

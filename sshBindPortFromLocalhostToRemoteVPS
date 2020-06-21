@@ -1,0 +1,14 @@
+#!/bin/bash
+# Binds 6379 on Localhost of the machine running this command to 10017 on the Remote VPS
+# Use -f to exit to "foreground"
+LocalPortToBindFrom=6379
+RemotePortToBindTo=10017
+SSHUserName="morphs"
+SSHHostIP="149.28.39.111"
+SSHKeyPath="/Users/morpheous/.ssh/LinuxMisc"
+ssh -vvvv -N -R $RemotePortToBindTo:localhost:$LocalPortToBindFrom $SSHUserName@$SSHHostIP \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR -F /dev/null \
+-i $SSHKeyPath

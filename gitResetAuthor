@@ -1,0 +1,8 @@
+#!/bin/bash
+ssh-add -D
+git config --global --unset user.name
+git config --global --unset user.email
+git config user.name "ceberous"
+git config user.email "cerbus.collin@gmail.com"
+ssh-add -k /Users/morpheous/.ssh/githubceb
+git remote add origin git@github.com:ceberous/osxSettings.git

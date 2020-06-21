@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+import time
+from twilio.rest import Client
+TwilioClient = Client( XXXXXXX , XXXXXX )
+new_call = TwilioClient.calls.create( url="https://ceberous.org/twiliocallwater" , to="+1XXXXXXXXXX" , from_="+1XXXXXXXXXX" , method="POST" )
+
+answered = False
+for i in range( 500 ):
+    time.sleep( 1 )
+    new_call = new_call.update()
+    status = new_call.status
+    print( status )
+    if status == "in-progress":
+    	answered = True

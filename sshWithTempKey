@@ -1,0 +1,17 @@
+#!/bin/bash
+# If only ssh client could read from stdin
+# https://bbs.archlinux.org/viewtopic.php?id=136414
+echo "-----BEGIN OPENSSH PRIVATE KEY-----
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+-----END OPENSSH PRIVATE KEY-----" > /tmp/transientnomachine \
+&& chmod 600 /tmp/transientnomachine && \
+ssh -f -N -R 10062:localhost:4000 transientnomachine@45.77.77.197 \
+-o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o LogLevel=ERROR \
+-i /tmp/transientnomachine \
+&& rm /tmp/transientnomachine

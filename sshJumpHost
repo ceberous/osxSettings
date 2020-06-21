@@ -1,0 +1,17 @@
+#!/bin/bash
+echo -e "Host relay-main
+\t  HostName 45.77.77.197
+\t  Port 22
+\t  User morphs
+\t  IdentityFile /Users/morpheous/.ssh/relay-main
+Host raspi-temp
+\t  HostName localhost
+\t  Port 10005
+\t  User pi
+\t  ProxyJump relay-main" > /tmp/relay-main-raspi-temp-ssh-config && \
+sshpass -p raspberry  ssh -F /tmp/relay-main-raspi-temp-ssh-config -J relay-main raspi-temp \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR && \
+rm /tmp/relay-main-raspi-temp-ssh-config

@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo mv ~/.parked_storage/MicrosoftAutoUpdate/Microsoft\ AutoUpdate.app /Library/Application\ Support/Microsoft/MAU2.0/Microsoft\ AutoUpdate.app

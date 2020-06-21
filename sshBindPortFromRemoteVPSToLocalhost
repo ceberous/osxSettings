@@ -1,0 +1,14 @@
+#!/bin/bash
+# Binds 5901 on Remote VPS to 10017 on Localhost of the machinie running this command
+# -f Goes to Foreground
+RemotePortToBindFrom=5901
+LocalPortToBindTo=10017
+SSHUserName="morphs"
+SSHHostIP="149.28.39.111"
+SSHKeyPath="/Users/morpheous/.ssh/LinuxMisc"
+ssh -vvv -N -L $LocalPortToBindTo:localhost:$RemotePortToBindFrom $SSHUserName@$SSHHostIP \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR -F /dev/null \
+-i $SSHKeyPath

@@ -1,0 +1,6 @@
+#!/bin/bash
+sudo docker images | grep none | awk '{ print $3; }' | xargs sudo docker rmi -f
+yes | sudo docker image prune -a
+sudo docker rmi $(sudo docker images -f "dangling=true" -q) -f
+sudo docker rmi $(sudo docker images | grep "^<none" | awk '{print $3}')
+sudo docker rmi $(sudo docker images | grep "none" | awk '{print $3}')

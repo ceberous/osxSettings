@@ -1,0 +1,22 @@
+#!/bin/bash
+MacAddress="84:39:be:6d:ba:df"
+UserName="morphs"
+SourceFolderPath="/home/morphs/WORKSPACE/"
+MountTargetFolderPath="/Users/morpheous/MOUNT/MediaBox"
+TargetIP=$(arp -na | grep -i $MacAddress | tail -1 | awk '{print $2}' | cut -d "(" -f2 | cut -d ")" -f1)
+if [ -z "$TargetIP" ]; then
+	echo "arp scan empty"
+	if [[ "$OSTYPE" == "linux-gnu" ]]; then
+		DefaultGateway=$(netstat -rn -A inet | grep -A 1 "Gateway" | tail -1 | awk '{print $2}')
+	elif [[ "$OSTYPE" == "darwin"* ]]; then
+		DefaultGateway=$(ip route ls | grep default | awk '{print $3}')
+	fi
+	echo "Default Gateway = $DefaultGateway"
+	echo "nmaping Default Gateway ..."
+	TargetIP=$(sudo nmap -sn $DefaultGateway/24 | grep -i '$MacAddress' -B 2 | head -1 | awk '{print $(NF)}')
+fi
+if [ -z "$TargetIP" ]; then
+	TargetIP=$(arp -na | grep -i $MacAddress | tail -1 | awk '{print $2}' | cut -d "(" -f2 | cut -d ")" -f1)
+fi
+echo "$MacAddress === $TargetIP"
+sudo sshfs -o allow_other,defer_permissions $UserName@$TargetIP:$SourceFolderPath $MountTargetFolderPath

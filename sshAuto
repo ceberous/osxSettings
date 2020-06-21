@@ -1,0 +1,24 @@
+sudo nano /etc/systemd/system/autossh-relaymain.service
+
+[Unit]
+Description=Keeps a tunnel to 'RelayMain' open
+After=network.target
+[Service]
+Environment="AUTOSSH_PIDFILE=/var/run/autossh.pid"
+Environment="AUTOSSH_POLL=60"
+Environment="AUTOSSH_FIRST_POLL=30"
+Environment="AUTOSSH_GATETIME=0"
+Environment="AUTOSSH_DEBUG=1"
+ExecStart=/usr/bin/autossh -M 10071 -N -R 10072:localhost:22 ubuntuvmcamo@45.77.77.197 \
+-o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o LogLevel=ERROR -F /dev/null \
+-i /home/camo/.ssh/ubuntuvmcamo
+ExecStop=/usr/bin/pkill autossh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl start autossh-relaymain.service
+sudo systemctl enable autossh-relaymain.service

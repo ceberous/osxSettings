@@ -1,0 +1,18 @@
+#!/bin/bash
+# Testing , delete arp cache for IP Address
+# sudo arp -d 192.168.1.101
+MacAddress="b8:27:eb:67:ae:53"
+RaspberryPiIP=$(arp -na | grep -i $MacAddress | tail -1 | awk '{print $2}' | cut -d "(" -f2 | cut -d ")" -f1)
+if [ -z "$RaspberryPiIP" ]; then
+        echo "arp scan empty"
+        if [[ "$OSTYPE" == "linux-gnu" ]]; then
+                DefaultGateway=$(netstat -rn -A inet | grep -A 1 "Gateway" | tail -1 | awk '{print $2}')
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+		# brew install iproute2mac
+                DefaultGateway=$(ip route ls | grep default | awk '{print $3}')
+        fi
+        echo "Default Gateway = $DefaultGateway"
+        RaspberryPiIP=$(sudo nmap -sn $DefaultGateway/24 | grep -i '$MacAddress' -B 2 | head -1 | awk '{print $(NF)}')
+fi
+echo "Raspberry Pi IP = $RaspberryPiIP"
+sshpass -p lamorsa ssh morphs@$RaspberryPiIP -AY -o ServerAliveInterval=60 -o StrictHostKeyChecking=no

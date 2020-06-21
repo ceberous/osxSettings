@@ -1,0 +1,4 @@
+#!/bin/bash
+MountTargetFolderPath="/Users/morpheous/MOUNT/MediaBox"
+sudo umount $MountTargetFolderPath
+sudo diskutil unmount $MountTargetFolderPath
