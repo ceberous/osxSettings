@@ -1,0 +1,62 @@
+# Bindport from Localhost A to Localhost B via a Cloud VPS
+
+# 1.) Run on Localhost A
+#!/bin/bash
+LocalPortToBindFrom=4000
+RemotePortToBindTo=10103
+SSHUserName="linuxtest"
+SSHHostIP="45.77.77.197"
+SSHKeyPath="/home/morphs/.ssh/relay-main"
+ssh -vvv -N -R $RemotePortToBindTo:localhost:$LocalPortToBindFrom $SSHUserName@$SSHHostIP \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR -F /dev/null \
+-i $SSHKeyPath
+
+
+# or as stand-alone command
+ssh -vvv -N -R 10103:localhost:4000 linuxtest@45.77.77.197 \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR -F /dev/null \
+-i "/home/morphs/.ssh/relay-main"
+
+
+================================================================================================
+
+# 2.) Run on Localhost B
+#!/bin/bash
+LocalPortToBindFrom=10103
+RemotePortToBindTo=10103
+SSHUserName="morphs"
+SSHHostIP="45.77.77.197"
+SSHKeyPath="/Users/morpheous/.ssh/relay-main"
+ssh -vvvv -N -L $RemotePortToBindTo:localhost:$LocalPortToBindFrom $SSHUserName@$SSHHostIP \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR -F /dev/null \
+-i $SSHKeyPath
+
+# or as stand-alone command
+ssh -vvvv -N -L 10103:localhost:10103 morphs@45.77.77.197 \
+-o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IdentitiesOnly=yes \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+-o ExitOnForwardFailure=yes \
+-o LogLevel=ERROR -F /dev/null \
+-i "/Users/morpheous/.ssh/relay-main"
+
+
+================================================================================================
+So this was all for no machine
+wget https://download.nomachine.com/download/6.11/Linux/nomachine_6.11.2_1_amd64.deb
+then sudo /usr/NX/bin/nxserver --restart
+try logging in with user gdm ??? wtf idk
+but try sudo passwd gdm on the localhost A , and then use it as the user on localhost B in the no machine client
+This still didn''t work at first, but aftet trying user gdm , I was able to use user morphs.
+For some reason , morphs didn''t want to log in at first.
+
+
+
