@@ -1,0 +1,11 @@
+#!/bin/bash
+for file in *
+do
+	extension=$(echo "$file" | sed 's/^.*\.//')
+	if [ "$extension" = "mkv" ] || [ "$extension" = "webm" ]; then
+		dirname=$(dirname "$file")
+		basename=$(basename "$file" | cut -d. -f1)
+		outputpath=$(echo "$dirname"/"$basename".mp4)
+		ffmpeg -i "$file" -vcodec copy -acodec copy -strict -2 "$outputpath"
+	fi
+done

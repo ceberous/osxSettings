@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# https://www.lesbonscomptes.com/recoll/usermanual/webhelp/docs/RCL.SEARCH.COMMANDLINE.html
+
+/opt/local/bin/recoll -t -q $1
