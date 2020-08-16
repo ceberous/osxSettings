@@ -1,0 +1,7 @@
+#!/bin/bash
+rclone -P copy --update \
+--exclude *.DS_Store \
+--exclude *node_modules/** \
+--exclude *venv/** \
+"/Users/morpheous/WORKSPACE" \
+"PDB636597OneDrive:WORKSPACE/MacBookAir"

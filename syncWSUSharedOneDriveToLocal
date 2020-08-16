@@ -1,0 +1,5 @@
+#!/bin/bash
+rclone -P copy --update \
+--exclude *.DS_Store \
+"WSUSharedOneDrive:MCAT" \
+"/Volumes/SP PHD U3/OneDriveSync/WSUShared/MCAT"
