@@ -1,0 +1,42 @@
+#!/bin/bash
+for file in *
+do
+	extension=$(echo "$file" | sed 's/^.*\.//')
+	if [ "$extension" = "mkv" ] || [ "$extension" = "webm" ] || [ "$extension" = "mp4" ]; then
+		dirname=$(dirname "$file")
+		basename=$(basename "$file" | cut -d. -f1)
+		outputpath=$(echo "$dirname"/"$basename"_2.mp4)
+		AudioCodec=$(ffprobe "$file" 2>&1 >/dev/null | grep Stream.*Audio | sed -e 's/.*Audio: //' -e 's/[, ].*//')
+		VideoCodec=$(ffprobe "$file" 2>&1 >/dev/null | grep Stream.*Video | sed -e 's/.*Video: //' -e 's/[, ].*//')
+		[ -z "$VideoCodec" ] && continue;
+		[ -z "$AudioCodec" ] && continue;
+		echo "$file"
+		echo "Current Audio Codec = $AudioCodec"
+		echo "Current Video Codec = $VideoCodec"
+		if [ "$VideoCodec" != "h264" ] && [ "$AudioCodec" != "aac" ]; then
+			echo "ReEncodnig Video and Audio"
+			echo "New Filename = $outputpath"
+			ffmpeg -i "$file" -c:v libx264 -c:a aac -strict -2 "$outputpath"
+		elif [ "$VideoCodec" != "h264" ] && [ "$AudioCodec" = "aac" ]; then
+			echo "ReEncodnig Video"
+			echo "New Filename = $outputpath"
+			ffmpeg -i "$file" -c:v libx264 -c:a copy -strict -2 "$outputpath"
+		elif [ "$VideoCodec" = "h264" ] && [ "$AudioCodec" != "aac" ]; then
+			echo "ReEncoding Audio"
+			echo "New Filename = $outputpath"
+			ffmpeg -i "$file" -c:v copy -c:a aac -strict -2 "$outputpath"
+		elif [ "$VideoCodec" = "h264" ] && [ "$AudioCodec" = "aac" ]; then
+			if [ "$extension" = "mp4" ]; then
+				echo "Skipping, Already MP4 With Correct Audio and Video Codecs"
+				echo ""
+				continue
+			else
+				echo "Copying Video and Audio"
+			fi
+			echo "$outputpath"
+			ffmpeg -i "$file" -c:v copy -c:a copy -strict -2 "$outputpath"
+		fi
+		rm "$file"
+		echo ""
+	fi
+done
