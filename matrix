@@ -1,0 +1,4 @@
+#!/bin/bash
+https://github.com/will8211/unimatrix
+#/usr/local/bin/unimatrix -n -s 96 -l m -c green
+/usr/local/bin/unimatrix -n -s 91 -l m -c 'default'
