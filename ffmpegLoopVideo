@@ -1,0 +1,5 @@
+#!/bin/bash
+# https://scottseverance.us/html/time_calculator.htm
+for i in $(seq 1 $2); do echo "file '$1'" >> list.txt; done
+ffmpeg -f concat -i list.txt -c copy "$1 - combined.mp4"
+rm list.txt

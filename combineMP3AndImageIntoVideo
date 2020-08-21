@@ -1,0 +1,2 @@
+#!/bin/bash
+ffmpeg -loop 1 -i image.png -i audio.mp3 -shortest -acodec video.mp4

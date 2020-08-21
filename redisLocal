@@ -1,0 +1,2 @@
+#!/bin/bash
+redis-cli -h localhost -p 6379 -n 1 -a 07ef24ee556b24fb3d4368c004f529f7c5fbea4156b8925fcc0c9d1f252cf0a1 --no-auth-warning

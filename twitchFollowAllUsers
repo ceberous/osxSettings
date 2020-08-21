@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+import requests
+import sys
+
+# You need two different client id's and oauth tokens.
+# Or you have to be a fucking detective to decipher the shit show that is twitch api docs.
+# Fuck twitch, youtube, spotify to hell. god damn fucking fucks.
+# How god damn hard is it to make something reasonable
+
+# Part One
+# =======================================================================
+# This User Info Is Found by Using Browser Dev Tools to Watch
+# Network Traffic when you "Follow" someone.
+# The client_id and oauth will be found in some request, I forget which.
+# You can use the function below to find your username, oh wait. no you fucking can't.
+# You have to use some other fucking user as a "pivot" , in order to get your own id using the function below.
+# Good luck
+USER = {
+  "client_id": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ,
+  "oauth": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ,
+  "id" : "XXXXXXXXX"
+}
+
+def get_user_id_from_username( username ):
+	headers = {
+		'Accept': 'application/vnd.twitchtv.v5+json' ,
+		'Client-ID': f"{USER[ 'client_id' ]}" ,
+	}
+	params = (
+		('login', username ) ,
+	)
+	url = f"https://api.twitch.tv/kraken/users"
+	response = requests.get( url , headers=headers , params=params )
+	response = response.json()
+	if 'users' in response:
+		if len( response['users'] ) > 0:
+			if '_id' in response[ 'users' ][ 0 ]:
+				return response[ 'users' ][ 0 ][ '_id' ]
+	return False
+
+# Part One
+# =======================================================================
+# 1.) Go Here: https://twitchtokengenerator.com/
+# 2.) Add Single Scope, Helix "user:edit"
+# 3.) Click "Generate Token" on the Button Right
+# 4.) Before Clicking "Authorize" , edit the scope in the url to be "user:edit:follows"
+# 5.) Hit "Enter" to reload the id.twitch.tv/oauth2 url with the "edited" scope
+# 6.) Go through the bullshit RECAPTCHA thing, and finally get client ID and oauth token aka "Bearer".
+
+# https://github.com/swiftyspiffy/twitch-token-generator
+# https://twitchtokengenerator.com/?scope=user:edit:follows&auth=auth_auth
+# https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=gp762nuuoqcoxypju8c569th9wz7q5&redirect_uri=https://twitchtokengenerator.com&scope=user:edit:follows&state=frontend|MDBsWG9kdzZqeDBBYkkvd2UzZzdXQT09&force_verify=true
+def follow_user( username ):
+	user_id_to_follow = get_user_id_from_username( username )
+	if user_id_to_follow == False:
+		print( f"Can't Find ID of User: {username}" )
+		return False
+	headers = {
+		'client-id': 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+		'Content-Type': 'application/json',
+		'Authorization': 'Bearer XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+	}
+	data = '{\n  "to_id": "' + user_id_to_follow + '",\n  "from_id": "' + USER['id'] + '"\n}'
+	response = requests.post('https://api.twitch.tv/helix/users/follows', headers=headers, data=data)
+	response.raise_for_status()
+	#print( response.text )
+	print( f"Followed: {username}" )
+
+def read_text( file_path ):
+	with open( file_path ) as f:
+		return f.read().splitlines()
+
+if __name__ == '__main__':
+	following_text_file_path = "/Users/morpheous/Documents/Notes/Misc/Twitch/following.txt"
+	# with open( following_text_file_path , 'r' ) as following_text_file:
+	# 	following = following_text_file.read()
+	# 	following = following.split( "," )
+	# 	following = [ x.strip().replace( "'" , "" ) for x in following ]
+	following = read_text( following_text_file_path )
+	following = sorted( set( following ) )
+	total = str( len( following ) )
+	print( following )
+	print( total )
+	for i , username in enumerate( following ):
+		print( f"{str(i+1)} of {total}" )
+		follow_user( username )

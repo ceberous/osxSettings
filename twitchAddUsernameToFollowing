@@ -1,0 +1,2 @@
+#!/bin/bash
+echo -e "\r$1" >> ~/Documents/Notes/Misc/Twitch/following.txt
