@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+import sys
+import qrcode
+img = qrcode.make( sys.argv[1] )
+img.save( "QRCCode.png" , "PNG" )
