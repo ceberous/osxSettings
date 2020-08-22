@@ -142,6 +142,6 @@ function GET_DATA( location_url ) {
 	}
 	console.log( location );
 	const data = await GET_DATA( location );
-	console.log( data );
+	console.log( data.reverse() );
 
 })();
