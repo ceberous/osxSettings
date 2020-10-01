@@ -16,5 +16,5 @@ else
 fi
 git add .
 git commit -m "$NextCommitNumber"
-git remote add origin git@github.com:ceberous/osxSettings.git
+git remote add origin git@github.com:ceberous/osxSettings.git || echo ""
 git push origin master

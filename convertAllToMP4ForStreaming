@@ -6,6 +6,7 @@ do
 		dirname=$(dirname "$file")
 		basename=$(basename "$file" | cut -d. -f1)
 		outputpath=$(echo "$dirname"/"$basename"_2.mp4)
+		outputpathfinal=$(echo "$dirname"/"$basename".mp4)
 		AudioCodec=$(ffprobe "$file" 2>&1 >/dev/null | grep Stream.*Audio | sed -e 's/.*Audio: //' -e 's/[, ].*//')
 		VideoCodec=$(ffprobe "$file" 2>&1 >/dev/null | grep Stream.*Video | sed -e 's/.*Video: //' -e 's/[, ].*//')
 		[ -z "$VideoCodec" ] && continue;
@@ -37,6 +38,7 @@ do
 			ffmpeg -i "$file" -c:v copy -c:a copy -strict -2 "$outputpath"
 		fi
 		rm "$file"
+		mv "$outputpath" "$outputpathfinal" 
 		echo ""
 	fi
 done

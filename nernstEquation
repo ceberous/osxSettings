@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+import math
+import argparse
+from pprint import pprint
+from pint import UnitRegistry
+
+units = UnitRegistry()
+units.define( "Molar = mole/liter" )
+units.define( "@alias Molar = M" )
+
+GAS_CONSTANT =  ( 8.314 *  units.joule ) / ( 1.0 * units.kelvin * units.mol )
+FARADAY_CONSTANT = ( 96485 * units.joule ) / ( 1.0 * units.volt * units.mol )
+
+def parse_args():
+	parser = argparse.ArgumentParser( description='Molarity Calculator' )
+	parser.add_argument(
+		'-i' , '--inside' ,
+		type=float ,
+		help='Concentration Inside the Cell' ,
+		required=True
+		)
+	parser.add_argument(
+		'-o' , '--outside' ,
+		type=float ,
+		help='Concentration Outside the Cell' ,
+		required=True
+		)
+	parser.add_argument(
+		'-c' , '--charge' ,
+		type=float ,
+		help='Charge of Ion' ,
+		required=True ,
+		default=float( 1.0 )
+		)
+	parser.add_argument(
+		'-t' , '--temperature' ,
+		type=float ,
+		help='Temperature in Celcius' ,
+		required=False ,
+		default=float( 37.0 )
+		)
+	parser.add_argument( # It Doesn't Really Matter, because we are getting a unit-less molar ratio anyways
+		'-mM' , '--milli-molar' ,
+		help='Concentrations Passed as Milli Molar instead of Molar' ,
+		required=False ,
+		default=False ,
+		action="store_true"
+		)
+	parser.add_argument(
+		'-mV' , '--milli-volt' ,
+		help='Return Result as Milivolts' ,
+		required=False ,
+		action="store_true"
+		)
+	args = vars( parser.parse_args() )
+	return args
+
+
+def compute_nernst_equation( args ):
+	CHARGE_OF_ION = args["charge"]
+	TEMPERATURE_KELVIN = ( args["temperature"] + 273.15 ) * units.kelvin
+	CONCENTRATION_OUTSIDE_CELL = args["outside"]
+	CONCENTRATION_INSIDE_CELL = args["inside"]
+	if args["milli_molar"] == True:
+		CONCENTRATION_OUTSIDE_CELL = ( CONCENTRATION_OUTSIDE_CELL / 1000 )
+		CONCENTRATION_INSIDE_CELL = ( CONCENTRATION_INSIDE_CELL / 1000 )
+	#CONCENTRATION_OUTSIDE_CELL = CONCENTRATION_OUTSIDE_CELL * ( units.mole / units.liter )
+	#CONCENTRATION_INSIDE_CELL = CONCENTRATION_INSIDE_CELL * ( units.mole / units.liter )
+	CONCENTRATION_OUTSIDE_CELL = CONCENTRATION_OUTSIDE_CELL * units.molar
+	CONCENTRATION_INSIDE_CELL = CONCENTRATION_INSIDE_CELL * units.molar
+
+	#print( 'Gas Constant = {:~P}'.format( GAS_CONSTANT ) )
+	#print( 'Faraday\'s Constant =  {:~P}'.format( FARADAY_CONSTANT ) )
+	#print( f'Charge of Ion = {CHARGE_OF_ION}' )
+	#print( 'Temperature in Kelvin = {:~P}'.format( TEMPERATURE_KELVIN ) )
+	#print( 'Concentration Outside the Cell = {:~P}'.format( CONCENTRATION_OUTSIDE_CELL ) )
+	#print( 'Concentration Inside the Cell = {:~P}'.format( CONCENTRATION_INSIDE_CELL ) )
+
+	LN_OF_MOLAR_RATIO = math.log( CONCENTRATION_OUTSIDE_CELL / CONCENTRATION_INSIDE_CELL )
+	LN_RESULT = ( (GAS_CONSTANT * TEMPERATURE_KELVIN) / (CHARGE_OF_ION* FARADAY_CONSTANT) ) * LN_OF_MOLAR_RATIO
+	LOG_OF_MOLAR_RATIO = math.log( 10 ) * math.log10( CONCENTRATION_OUTSIDE_CELL / CONCENTRATION_INSIDE_CELL )
+	LOG_RESULT = ( (GAS_CONSTANT * TEMPERATURE_KELVIN) / (CHARGE_OF_ION* FARADAY_CONSTANT) ) * LOG_OF_MOLAR_RATIO
+	if args["milli_volt"] == True:
+		#RESULT = RESULT * 1000
+		LN_RESULT = LN_RESULT.to( units.millivolt )
+		LOG_RESULT = LOG_RESULT.to( units.millivolt )
+	print( f"ln Result = {LN_RESULT}" )
+	print( f"Log10 Result = {LOG_RESULT}" )
+	return LN_RESULT
+
+
+
+result = compute_nernst_equation( parse_args() )
+print( result )

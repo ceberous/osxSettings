@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+import math
+import numpy
+
+total_items = int( input( "Total Number of Items = " ) )
+data_points = []
+for i in range( 1 , total_items + 1 ):
+	data_points.append( float( input( f"Item: {i} = " ) ) )
+
+sum = 0
+for i , dp in enumerate( data_points ):
+	sum += dp
+average = ( sum / total_items )
+print( f"Average = {average}" ) 
+numpy_average = numpy.mean( data_points )
+print( f"Numpy Average = {numpy_average}" )
+
+sum_of_squared_deviation = 0
+for i in range( len( data_points ) ):
+    sum_of_squared_deviation += ( data_points[i] - average )**2
+standard_deviation = ( ( sum_of_squared_deviation ) / len( data_points ) )**0.5
+print( f"Standard Deviation = {standard_deviation}" )
+
+numpy_standard_deviation = numpy.std( numpy.array( data_points ) )
+print( f"Numpy Standard Deviation = {numpy_standard_deviation}" )

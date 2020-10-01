@@ -1,3 +1,18 @@
-#!/bin/bash
-mogrify -background white -flatten  -format jpeg *
-find . -type f ! -name '*.jpeg' -delete
+#!/usr/bin/env python3
+from pathlib import Path
+import subprocess
+
+# brew install ghostscript
+# brew install imagemagick
+
+ALLOWED_IMAGE_EXTENSIONS = [ ".jpg" , ".png" , ".bmp" , ".gif" , ".ico" , ".tiff" , ".tiff" , ".svg" ]
+FilesInCurrentPathPosix = Path( Path.cwd() ).glob( '**/*' )
+FilesInCurrentPathPosix = [ x for x in FilesInCurrentPathPosix if x.is_file() ]
+FilesInCurrentPathPosix = [ x for x in FilesInCurrentPathPosix if x.suffix in ALLOWED_IMAGE_EXTENSIONS ]
+for index , image_posix in enumerate( FilesInCurrentPathPosix ):
+	print( f'Converting "{str(image_posix)}"' )
+	conversion_result = subprocess.check_output( [ 'mogrify' , '-background' , 'white' , '-flatten' , '-format' , 'jpeg' , f"{str(image_posix)}" ] )
+	conversion_result = conversion_result.decode( "utf-8" )
+	if not conversion_result:
+		print( f'Deleting "{str(image_posix)}"' )
+		deletion_result = subprocess.check_output( [ 'rm' , f"{str(image_posix)}" ] )

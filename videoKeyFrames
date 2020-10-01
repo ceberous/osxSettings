@@ -1,0 +1,4 @@
+#!/bin/bash
+#https://stackoverflow.com/a/12100266
+WidthHeight=$(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x "$1")
+ffmpeg -i "$1" -vsync 0 -vf select="eq(pict_type\,PICT_TYPE_I)" -s "$WidthHeight" -f image2 %03d.jpeg

@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+import sys
+import requests
+from bs4 import BeautifulSoup
+
+NCBI_NIH_ARTICLE_BASE_URL = "https://www.ncbi.nlm.nih.gov/pubmed";
+def get_doi_from_ncbi_nih_html_scrape( pmid ):
+	try:
+		url = f"{NCBI_NIH_ARTICLE_BASE_URL}/{pmid}"
+		response = requests.get( url )
+		response.raise_for_status()
+		soup = BeautifulSoup( response.text , 'html.parser' )
+		citation = soup.find_all( 'span' , { 'class': 'full-journal-citation' } )[ 0 ]
+		doi = citation.text.split( "doi: " )[ 1 ]
+		if doi[ -1 ] == ".":
+			doi = doi[ 0:-1 ]
+		return doi
+	except Exception as e:
+		#print( e )
+		return False
+
+ALT_METRIC_API_PMID_BASE_URL = "https://api.altmetric.com/v1/pmid";
+def get_doi_from_alt_metric_api( pmid ):
+	try:
+		url = f"{ALT_METRIC_API_PMID_BASE_URL}/{pmid}"
+		response = requests.get( url )
+		response.raise_for_status()
+		result = response.json()
+		#print( result )
+		return result["doi"]
+	except Exception as e:
+		#print( e )
+		return False
+
+doi = get_doi_from_alt_metric_api( sys.argv[ 1 ] )
+if doi != False:
+	print( doi )
+	sys.exit( 1 )
+
+doi = get_doi_from_ncbi_nih_html_scrape( sys.argv[ 1 ] )
+if doi != False:
+	print( doi )
+	sys.exit( 1 )

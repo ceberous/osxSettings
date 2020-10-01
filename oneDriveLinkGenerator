@@ -1,3 +1,8 @@
 #!/bin/bash
-echo "[InternetShortcut]" > NewLink.url
-echo "URL=$1" >> NewLink.url
+if [ -z "$2" ]; then
+	OutputName="NewLink.url"
+else
+	OutputName="$2.url"
+fi
+echo "[InternetShortcut]" > "$OutputName"
+echo "URL=$1" >> "$OutputName"

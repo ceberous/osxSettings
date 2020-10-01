@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+import sys
+import requests
+import pyperclip
+input_path = sys.argv[ 1 ]
+
+def write_text( file_path , text_lines_list ):
+	#with open( file_path , 'a', encoding='utf-8' ) as f:
+	with open( file_path , 'w', encoding='utf-8' ) as f:
+		f.writelines( text_lines_list )
+
+if "Typora" in input_path:
+	# fucking typora on Mac removes the duckduckgo image cdn prefix
+	# so it turns this:
+	# https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fpngriver.com%2Fwp-content%2Fuploads%2F2017%2F12%2FDuck-free-png-images-transparent-backgrounds-Duck-7.png&f=1&nofb=1
+	# into this:
+	# /var/folders/6m/x8hckx0n1cjcbw8jczgl8s9w0000gn/T/abnerworks.Typora/?u=https%3A%2F%2Fpngriver.com%2Fwp-content%2Fuploads%2F2017%2F12%2FDuck-free-png-images-transparent-backgrounds-Duck-7-20200830034113033.png
+	write_text( "/Users/morpheous/TMP2/typorawadu" , input_path )
+	input_path = input_path.split( "Typora/?u=" )[ 1 ]
+	headers = {
+		'key': '',
+		'url': input_path
+	}
+	url = 'https://39363.org/images/upload-url'
+	response = requests.post( url , headers=headers )
+	response.raise_for_status()
+	print( response.text )
+	pyperclip.copy( response.text )
+
+elif "http" in input_path:
+	headers = {
+		'key': '',
+		'url': input_path
+	}
+	url = 'https://39363.org/images/upload-url'
+	response = requests.post( url , headers=headers )
+	response.raise_for_status()
+	print( response.text )
+	pyperclip.copy( f"![]({response.text})" )
+else:
+	with open( input_path , "rb" ) as upload_file:
+		file_list = { "file": upload_file }
+		headers = {
+			'key': '',
+		}
+		url = 'https://39363.org/images/upload'
+		response = requests.post( url , headers=headers , files=file_list )
+		response.raise_for_status()
+		print( response.text )
+		pyperclip.copy( response.text )

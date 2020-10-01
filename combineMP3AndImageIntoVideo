@@ -1,2 +1,6 @@
 #!/bin/bash
-ffmpeg -loop 1 -i image.png -i audio.mp3 -shortest -acodec video.mp4
+#ffmpeg -loop 1 -i image.png -i audio.mp3 -shortest -acodec video.mp4
+# https://askubuntu.com/questions/868283/image-audio-mp4-how-to-make-video-smaller
+ffmpeg -loop 1 -framerate 1 -i image.jpg -i audio.mp3 \
+-map 0 -map 1:a -c:v libx264 -preset ultrafast -tune stillimage -vf fps=10 \
+-c:a copy -shortest video.mp4

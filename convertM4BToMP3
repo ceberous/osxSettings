@@ -1,0 +1,4 @@
+#!/bin/bash
+basename=$(basename "$1")
+echo $basename
+#ffmpeg -i The\ Wonderful\ Wizard\ of\ Oz.m4b -acodec libmp3lame 
