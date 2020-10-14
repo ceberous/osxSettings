@@ -1,0 +1,5 @@
+#!/bin/bash
+# https://github.com/dvingerh/PyInstaStories
+source "/Users/morpheous/APPLICATIONS_2/PyInstaStories/venv/bin/activate"
+python pyinstastories.py -d dobbycryptids --hq-videos --no-thumbs
+deactivate

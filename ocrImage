@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 /Users/morpheous/APPLICATIONS_2/image2text/main.py "$1"

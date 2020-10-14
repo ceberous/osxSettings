@@ -1,0 +1,19 @@
+#!/bin/bash
+# https://gitlab.mister-muffin.de/josch/img2pdf
+echo " "
+a=${@}
+varstring="/usr/local/bin/img2pdf"
+for var in "$@"
+do
+	echo "$var"
+	python3 /Users/morpheous/APPLICATIONS_2/image2text/main.py -i "$var"
+	echo " "
+	varstring+=" \"${var}\""
+done
+varstring+=" -o out.pdf"
+eval $varstring
+
+# https://github.com/jbarlow83/OCRmyPDF
+ocrmypdf out.pdf OCRed.pdf --force-ocr
+rm out.pdf
+open OCRed.pdf

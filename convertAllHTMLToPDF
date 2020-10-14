@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import subprocess
+
+ALLOWED_EXTENSIONS = [ ".htm" , ".html" ]
+FilesInCurrentPathPosix = Path( Path.cwd() ).glob( '**/*' )
+FilesInCurrentPathPosix = [ x for x in FilesInCurrentPathPosix if x.is_file() ]
+FilesInCurrentPathPosix = [ x for x in FilesInCurrentPathPosix if x.suffix in ALLOWED_EXTENSIONS ]
+total_files = len(FilesInCurrentPathPosix)
+for index , filepath_posix in enumerate( FilesInCurrentPathPosix ):
+	outputpath_posix = Path( filepath_posix.parent ).joinpath( filepath_posix.stem + ".pdf" )
+	#outputpath_posix = Path( "/Users/morpheous/TMP2/NIA/MarkDown/" ).joinpath( filepath_posix.stem + ".md" )
+	print( f"Converting [{index+1}] of {total_files}" )
+	options = [
+		'pandoc' ,
+		f"{str( filepath_posix )}" ,
+		'--pdf-engine' , '/Users/morpheous/bin/xelatex' , # Install From MikTeX
+		'-V' , 'mainfont:DejaVuSerif.ttf' ,
+		'-V' , 'sansfont:DejaVuSans.ttf' ,
+		'-V' , 'monofont:DejaVuSansMono.ttf' ,
+		'-V' , 'mathfont:texgyredejavu-math.otf' ,
+		'-o' , f"{str(outputpath_posix)}"
+	]
+	result = subprocess.run( options , cwd=str( filepath_posix.parent ) , capture_output=True , universal_newlines=True )
+	if result.returncode != 0:
+		print( str( filepath_posix.parent ) )
+		print( result.stderr )

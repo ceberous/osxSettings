@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+import sys
+if len( sys.argv ) < 3:
+	decimal_amount = 5
+else:
+	decimal_amount = sys.argv[2]
+print( f'{float(sys.argv[1]):.{decimal_amount}E}' )

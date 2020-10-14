@@ -1,0 +1,12 @@
+#!/bin/bash
+# https://github.com/hwding/pdf-unstamper
+# java -jar ~/Downloads/pdf-unstamper.jar\
+# -i "/Users/morpheous/OneDrive - Wright State University/2020/Fall/03 - Physics 1110/06 - Exams/Exam 1 Study Guide/Example Exams/121_F09_Exam1MU.pdf" \
+# -o "test.pdf" \
+# -k "This study resource was" \
+# -k "shared via CourseHero.com"
+
+java -jar /Users/morpheous/APPLICATIONS_2/pdf-unstamper.jar \
+-i "$1" \
+-o "$2" \
+-k "$3"
