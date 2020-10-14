@@ -16,7 +16,7 @@ if result.returncode != 0:
 # 2.) Convert it to PNG , transparent background
 # https://stackoverflow.com/a/16481079
 #result = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' , '-fuzz' , '2%' , '-transparent' , 'white' , '/tmp/screenshot-transparent.png' ] , capture_output=True , universal_newlines=True )
-result = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' , '-transparent' , 'white' , '/tmp/screenshot-transparent.png' ] , capture_output=True , universal_newlines=True )
+result = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' ,  '-colorspace' , 'RGB' , '-transparent' , 'white' , '/tmp/screenshot-transparent.png' ] , capture_output=True , universal_newlines=True )
 if result.returncode != 0:
 	print( "Error Converting to Transparent PNG" )
 	print( result.stderr )
