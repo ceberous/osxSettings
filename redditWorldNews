@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+import os
+import sys
+import base64
+import subprocess
+#import feedparser
+from pprint import pprint
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+import requests
+from bs4 import BeautifulSoup
+
+def base64_encode( message ):
+	try:
+		message_bytes = message.encode( 'utf-8' )
+		base64_bytes = base64.b64encode( message_bytes )
+		base64_message = base64_bytes.decode( 'utf-8' )
+		return base64_message
+	except Exception as e:
+		print( e )
+		return False
+
+def base64_decode( base64_message ):
+	try:
+		base64_bytes = base64_message.encode( 'utf-8' )
+		message_bytes = base64.b64decode(base64_bytes)
+		message = message_bytes.decode( 'utf-8' )
+		return message
+	except Exception as e:
+		print( e )
+		return False
+
+
+def display_notifaction( text , title="World News Alert" ):
+	try:
+		# osascript -e 'display notification "test notification!" with title "This is the title"'
+		options = [
+			'osascript' , '-e'
+			f'display notification "{text}" with title "{title}"' ,
+		]
+		# https://docs.python.org/3/library/subprocess.html
+		result = subprocess.run( options , cwd=os.getcwd() , shell=False , capture_output=True , universal_newlines=True )
+		if result.returncode != 0:
+			print( result.stderr )
+			return result.stderr
+		else:
+			#print( result.stdout )
+			return result.stdout
+	except Exception as e:
+		print( e )
+		return False
+
+def display_dialog_box( text , title="World News Alert" ):
+	try:
+		# osascript -e 'display dialog "Hello from osxdaily.com" with title "Hello"'
+		options = [
+			'osascript' , '-e'
+			f'display dialog "{text}" with title "{title}"' ,
+		]
+		# https://docs.python.org/3/library/subprocess.html
+		result = subprocess.run( options , cwd=os.getcwd() , shell=False , capture_output=True , universal_newlines=True )
+		if result.returncode != 0:
+			print( result.stderr )
+			return result.stderr
+		else:
+			#print( result.stdout )
+			return result.stdout
+	except Exception as e:
+		print( e )
+		return False
+
+def batch_process( options ):
+	batch_size = len( options[ "batch_list" ] )
+	with ThreadPoolExecutor() as executor:
+		result_pool = list( tqdm( executor.map( options[ "function_reference" ] , iter( options[ "batch_list" ] ) ) , total=batch_size ) )
+		return result_pool
+
+def get_latest_rss_feed():
+	try:
+		WorldNewsFeed = feedparser.parse( 'https://www.reddit.com/r/worldnews/top/.rss' )
+		results = []
+		print( len( WorldNewsFeed.entries ) )
+		#for index , item in enumerate( WorldNewsFeed.entries ):
+			#pprint( item )
+			#print( item.summary )
+			#print( item.link )
+		CommentsFeed = feedparser.parse( f"{WorldNewsFeed.entries[0]['link']}/.rss" )
+		pprint( CommentsFeed )
+	except Exception as e:
+		print( e )
+
+def get_top_today():
+	try:
+		results = []
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:82.0) Gecko/20100101 Firefox/82.0',
+			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+			'Accept-Language': 'en-US,en;q=0.5',
+			'Referer': 'https://old.reddit.com/r/worldnews/top/?sort=top&t=month',
+			'DNT': '1',
+			'Connection': 'keep-alive',
+			'Upgrade-Insecure-Requests': '1',
+			'Pragma': 'no-cache',
+			'Cache-Control': 'no-cache',
+		}
+		params = (
+			('sort', 'top'),
+			('t', 'day'),
+		)
+		response = requests.get( 'https://old.reddit.com/r/worldnews/top/' , headers=headers , params=params )
+		response.raise_for_status()
+		soup = BeautifulSoup( response.text , "html.parser" )
+		items = soup.find_all( "div" , { "class": "entry" } )
+		for index , item in enumerate( items ):
+			link = item.find_all( "a" , attrs={ "data-event-action": "title" } )
+			comments = item.find_all( "a" , attrs={ "data-event-action": "comments" } )
+			if len( comments ) < 1:
+				continue
+			votes = item.find_previous( "div" , { "class": "score" } ).text
+			if "k" in votes:
+				votes = votes.split("k")[0].split(".")
+				thousands = votes[0]
+				if len( thousands ) == 2:
+					thousands = f"0{thousands}"
+				elif len( thousands ) == 1:
+					thousands = f"00{thousands}"
+				hundreds = votes[1]
+				if len( hundreds ) == 2:
+					hundreds = f"{hundreds}0"
+				elif len( hundreds ) == 1:
+					hundreds = f"{hundreds}00"
+				votes = int( f"{thousands}{hundreds}" )
+			else:
+				votes = int( votes )
+			results.append({
+					"title": link[0].text ,
+					"link": link[0]["href"] ,
+					"total_comments": comments[0].text.strip().split( " comments" )[0] ,
+					"comments_link": comments[0]["href"] ,
+					"comments_link_base64": base64_encode( comments[0]["href"] ) ,
+					"votes": votes
+				})
+
+		#results.reverse()
+		results = sorted( results , key=lambda k: k['votes'] , reverse=False )
+		return results
+	except Exception as e:
+		print( e )
+
+if __name__ == '__main__':
+	latest = get_top_today()
+	pprint( latest )
+	display_notifaction( latest[-1]["title"] )
+	#display_dialog_box( latest[-1]["title"] )
+
+	# batch_process({
+	#         "max_workers": 10 ,
+	#         "batch_list": [] ,
+	#         "function_reference": func_ref
+	#     })

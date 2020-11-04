@@ -13,10 +13,35 @@ if result.returncode != 0:
 	sys.exit( 1 )
 
 
+# 2.) Get The Color of the Top-Left Pixel, and Assume it is the Background Color
+background_color = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' , '-format' , '"%[pixel:p{0,0}]"' , 'info:-' ] , capture_output=True , universal_newlines=True )
+background_color = background_color.stdout[ 1:-1 ]
+
 # 2.) Convert it to PNG , transparent background
 # https://stackoverflow.com/a/16481079
-#result = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' , '-fuzz' , '2%' , '-transparent' , 'white' , '/tmp/screenshot-transparent.png' ] , capture_output=True , universal_newlines=True )
-result = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' ,  '-colorspace' , 'RGB' , '-transparent' , 'white' , '/tmp/screenshot-transparent.png' ] , capture_output=True , universal_newlines=True )
+# https://stackoverflow.com/questions/48628878/error-in-converting-images-in-imagemagick
+# result = subprocess.run( [ 'convert' , '/tmp/screenshot-non-transparent.png' , '-fuzz' , '2%' , '-transparent' , 'white' , '/tmp/screenshot-transparent.png' ] , capture_output=True , universal_newlines=True )
+# png_conversion_command = [
+# 	'convert' , '/tmp/screenshot-non-transparent.png' ,
+# 	'-alpha' , 'off' ,
+# 	'-bordercolor' , background_color ,
+# 	'-border' , '1' ,
+# 	f'( +clone -fuzz 30% -fill none -floodfill +0+0 {background_color} -alpha extract -geometry 200% -blur 0x0.5 -morphology erode square:1 -geometry 50% )' ,
+# 	'-compose' , 'CopyOpacity' ,
+# 	'-composite' , '-shave' , '1' ,
+# 	'/tmp/screenshot-transparent.png'
+# ]
+png_conversion_command = [
+	'convert' , '/tmp/screenshot-non-transparent.png' ,
+	#'-colorspace' , 'RGB' ,
+	'-colorspace' , 'srgb' ,
+	#'-transparent' , 'white' ,
+	'-transparent' , background_color ,
+	'-quality' , '100' ,
+	'-fuzz' , ' 30%' ,
+	'/tmp/screenshot-transparent.png'
+]
+result = subprocess.run( png_conversion_command , capture_output=True , universal_newlines=True )
 if result.returncode != 0:
 	print( "Error Converting to Transparent PNG" )
 	print( result.stderr )

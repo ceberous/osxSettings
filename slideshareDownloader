@@ -1,0 +1,5 @@
+#!/bin/bash
+# https://github.com/cballenar/slideshare-to-pdf
+source /Users/morpheous/APPLICATIONS_2/slideshare-to-pdf/venv/bin/activate
+python /Users/morpheous/APPLICATIONS_2/slideshare-to-pdf/main.py -i "$1"
+deactivate
