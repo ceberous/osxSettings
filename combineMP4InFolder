@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# https://stackoverflow.com/a/1747099
+videos=($(ls *.mp4 | sort -n -t _ -k 2))
+rm list.txt || x="1"
+for i in "${videos[@]}"
+do
+	echo -e "file '$i'" >> list.txt
+done
+ffmpeg -f concat -i list.txt -c copy combined.mp4
+rm list.txt || x="1"
