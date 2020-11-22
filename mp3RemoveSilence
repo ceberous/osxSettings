@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# https://superuser.com/questions/120315/best-program-to-trim-silence-beginning-and-end-of-mp3-files
+# https://superuser.com/questions/421153/how-to-add-a-mp3-handler-to-sox
+
+# https://unix.stackexchange.com/a/124740
+
+# brew install sox
+# sox "$1" "silence_removed.mp3" silence 1 0.1 1% -1 0.1 1%
+
+# https://github.com/lagmoellertim/unsilence
+unsilence "$1" -ao -ss 8 -t 16 unsilenced.mp3

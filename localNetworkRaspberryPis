@@ -6,6 +6,15 @@ import socket
 import netifaces
 import platform
 from pprint import pprint
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+
+def batch_process( options ):
+	batch_size = len( options[ "batch_list" ] )
+	with ThreadPoolExecutor() as executor:
+		#result_pool = list( tqdm( executor.map( options[ "function_reference" ] , iter( options[ "batch_list" ] ) ) , total=batch_size ) )
+		result_pool = list( executor.map( options[ "function_reference" ] , iter( options[ "batch_list" ] ) ) )
+		return result_pool
 
 class LocalNetwork:
 
@@ -15,8 +24,10 @@ class LocalNetwork:
 		self.GetCurrentIPAddress()
 		self.GetInterfaces()
 		self.GetGateWays()
-		self.NMAPAllGateWays()
-		self.ARPAllInterfaces()
+		#self.NMAPAllGateWays()
+		self.NMAPAllGateWaysThreaded()
+		#self.ARPAllInterfaces()
+		self.ARPAllInterfacesThreaded()
 
 	def GetCurrentIPAddress( self ):
 		# https://stackoverflow.com/a/28950776
@@ -45,6 +56,28 @@ class LocalNetwork:
 						self.map[ "interfaces" ][ str( item[ 1 ] ) ][ "gateway_ip" ] = item[ 0 ]
 						self.map[ "interfaces" ][ str( item[ 1 ] ) ][ "ips" ] = {}
 
+	def NMAPGateway( self , interface ):
+		# AKA a Network "Probe"
+		shell_command = [ "nmap" ]
+		if self.platform == "Linux":
+			shell_command.append( "-sn" )
+		elif self.platform == "Darwin":
+			shell_command.append( "-sP" )
+		if self.platform == "Windows":
+			sys.exit( 1 )
+		if "gateway_ip" not in self.map[ "interfaces" ][ interface ]:
+			return False
+		print( "Maping " + interface )
+		shell_command.append( self.map[ "interfaces" ][ interface ][ "gateway_ip" ] + "/24" )
+		result = subprocess.run( shell_command , capture_output=True , universal_newlines=True )
+
+	def NMAPAllGateWaysThreaded( self ):
+		batch_process({
+			"max_workers": 3 ,
+			"batch_list": self.map[ "interfaces" ] ,
+			"function_reference": self.NMAPGateway
+		})
+
 	def NMAPAllGateWays( self ):
 		# AKA a Network "Probe"
 		shell_command = [ "nmap" ]
@@ -60,6 +93,27 @@ class LocalNetwork:
 				shell_command.append( self.map[ "interfaces" ][ interface ][ "gateway_ip" ] + "/24" )
 				#print( result.returncode, result.stdout, result.stderr )
 				result = subprocess.run( shell_command , capture_output=True , universal_newlines=True )
+
+	def ARPInterface( self , interface ):
+		if self.platform == "Windows":
+			sys.exit( 1 )
+		if "gateway_ip" not in self.map[ "interfaces" ][ interface ]:
+			return False
+		shell_command = f"arp -na -i {interface} | awk '{{print $2,$4}}'"
+		result = subprocess.check_output( shell_command , universal_newlines=True , shell=True )
+		lines = result.split( "\n" )
+		for index , line in enumerate( lines ):
+			if len( line ) < 3:
+				continue
+			items = line.split( " " )
+			ip = items[0]
+			ip = ip.replace( "(" , "" )
+			ip = ip.replace( ")" , "" )
+			mac_address = items[1]
+			if mac_address == "(incomplete)":
+				continue
+			print( f"{ip} === {mac_address}" )
+			self.map[ "interfaces" ][ interface ][ "ips" ][ ip ] = { "mac_address": mac_address }
 
 	def ARPAllInterfaces( self ):
 		if self.platform == "Windows":
@@ -93,6 +147,13 @@ class LocalNetwork:
 					# print( line_interface )
 					# print( ip )
 					self.map[ "interfaces" ][ line_interface ][ "ips" ][ ip ] = { "mac_address": mac_address }
+
+	def ARPAllInterfacesThreaded( self ):
+		batch_process({
+			"max_workers": 3 ,
+			"batch_list": self.map[ "interfaces" ] ,
+			"function_reference": self.ARPInterface
+		})
 
 	def GetIPFromMacAddress( self , mac_address ):
 		for index , interface in enumerate( self.map[ "interfaces"] ):

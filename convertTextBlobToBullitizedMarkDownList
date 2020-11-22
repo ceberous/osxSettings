@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+import sys
+import pyperclip
+from pprint import pprint
+from decli import cli
+from pathlib import Path
+
+def write_text( file_path , text_lines_list ):
+	with open( file_path , 'w', encoding='utf-8' ) as f:
+		f.writelines( text_lines_list )
+
+def read_text( file_path ):
+	with open( file_path ) as f:
+		return f.read().splitlines()
+
+cli_definitions = {
+	"prog": "Text Blob to Markdown Bullitized List Converter" ,
+	"arguments": [
+		{ "name": "input" , "help": "input" } ,
+		{
+			"name": [ "--input" , "-i" ] ,
+			"help": "input" ,
+			"required": False
+		} ,
+		{
+			"name": [ "--output" , "-o" ] ,
+			"action": "store_true" ,
+		}
+	]
+}
+parser = cli( cli_definitions )
+args = vars( parser.parse_args() )
+try:
+	if Path( args["input"] ).is_file():
+		input_text = read_text( args["input"] )
+	else:
+		input_text = args["input"]
+except Exception as e:
+	input_text = args["input"]
+sentences = input_text.split( ". " )
+bulleted_line_list = [ f"- {x}"  for x in sentences ]
+bulleted_line_list_raw_markdown = "\n".join( bulleted_line_list )
+if args["output"] == True:
+	write_text( "bulleted_lines.md" , bulleted_line_list )
+print( bulleted_line_list_raw_markdown )
+pyperclip.copy( bulleted_line_list_raw_markdown )

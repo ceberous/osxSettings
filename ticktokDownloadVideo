@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+# https://github.com/drawrowfly/tiktok-scraper
+tiktok-scraper video -d "$1"

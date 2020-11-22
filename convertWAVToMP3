@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# https://stackoverflow.com/a/12952172
+ffmpeg -i "$1" -b:a 320k audio.mp3
