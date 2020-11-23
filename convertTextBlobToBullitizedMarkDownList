@@ -4,6 +4,7 @@ import pyperclip
 from pprint import pprint
 from decli import cli
 from pathlib import Path
+import re
 
 def write_text( file_path , text_lines_list ):
 	with open( file_path , 'w', encoding='utf-8' ) as f:
@@ -12,6 +13,10 @@ def write_text( file_path , text_lines_list ):
 def read_text( file_path ):
 	with open( file_path ) as f:
 		return f.read().splitlines()
+
+# https://stackoverflow.com/a/25736515
+def convert_to_sentences( text_blob ):
+	return re.split( r'(?<=[^A-Z].[.?]) +(?=[A-Z])' , text_blob )
 
 cli_definitions = {
 	"prog": "Text Blob to Markdown Bullitized List Converter" ,
@@ -37,7 +42,10 @@ try:
 		input_text = args["input"]
 except Exception as e:
 	input_text = args["input"]
-sentences = input_text.split( ". " )
+
+input_text = " ".join( input_text.split() )
+#sentences = input_text.split( ". " )
+sentences = convert_to_sentences( input_text )
 bulleted_line_list = [ f"- {x}"  for x in sentences ]
 bulleted_line_list_raw_markdown = "\n".join( bulleted_line_list )
 if args["output"] == True:
