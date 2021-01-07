@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo nano /usr/local/bin/remoteLoginOff

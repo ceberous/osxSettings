@@ -1,7 +1,8 @@
 #!/bin/bash
 rclone -P copy --update \
+"/Users/morpheous/WORKSPACE" \
+"PDB636597OneDrive:WORKSPACE/MINI/"
 --exclude *.DS_Store \
 --exclude *node_modules/** \
 --exclude *venv/** \
-"/Users/morpheous/WORKSPACE" \
-"PDB636597OneDrive:WORKSPACE/MacBookAir"
+--create-empty-src-dirs

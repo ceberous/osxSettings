@@ -1,0 +1,2 @@
+#!/bin/bash
+mogrify -background white -flatten  -format jpeg "$1"

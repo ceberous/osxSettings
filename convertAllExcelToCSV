@@ -1,0 +1,12 @@
+#!/bin/bash/python3
+import sys
+from pathlib import Path
+from xlsx2csv import Xlsx2csv
+ALLOWED_IMAGE_EXTENSIONS = [ ".xlsx" , ".xls" ]
+base_directory_posix = Path( sys.argv[1] )
+FilesInCurrentPathPosix = base_directory_posix.glob( '**/*' )
+FilesInCurrentPathPosix = [ x for x in FilesInCurrentPathPosix if x.is_file() ]
+FilesInCurrentPathPosix = [ x for x in FilesInCurrentPathPosix if x.suffix in ALLOWED_IMAGE_EXTENSIONS ]
+for index , file_posix in enumerate( FilesInCurrentPathPosix ):
+	output_path_posix = base_directory_posix.joinpath( f"{file_posix.stem}.csv" )
+	Xlsx2csv( str( file_posix ) , outputencoding="utf-8" ).convert( str( output_path_posix ) )

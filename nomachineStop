@@ -1,0 +1,4 @@
+#!/bin/bash
+# https://www.nomachine.com/AR04L00800
+sudo /etc/NX/nxserver --shutdown
+# sudo /etc/NX/nxserver --startmode manual
