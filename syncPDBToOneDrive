@@ -1,8 +1,12 @@
-#!/bin/bash
-rclone -P copy --update \
+echo '- *.DS_Store
+- venv/**
+- /venv/**
+- */venv/**
+- **/venv/**
+- node_modules/**
+- /node_modules/**
+- */node_modules/**
+- **/node_modules/**' | tee /tmp/pdb-filter-file.txt && \
+rclone -P copy --create-empty-src-dirs --skip-links --filter-from /tmp/pdb-filter-file.txt --update \
 "/Users/morpheous/WORKSPACE" \
 "PDB636597OneDrive:WORKSPACE/MINI/"
---exclude *.DS_Store \
---exclude *node_modules/** \
---exclude *venv/** \
---create-empty-src-dirs
