@@ -1,0 +1,7 @@
+#!/bin/bash
+unzip -l "$1"
+dd if="$1" of=crx.zip bs=1 skip=306
+name=$(basename "$1" .crx)
+mkdir "$name"
+unzip crx.zip -d "./$name"
+rm crx.zip
