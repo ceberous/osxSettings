@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+import sys
+import re
+import pdftotext
+import pdfminer.high_level
+import pdfminer.layout
+import pyperclip
+
+def write_text( file_path , text_lines_list ):
+	#with open( file_path , 'a', encoding='utf-8' ) as f:
+	with open( file_path , 'w', encoding='utf-8' ) as f:
+		f.writelines( text_lines_list )
+
+def read_text( file_path ):
+	with open( file_path ) as f:
+		return f.read().splitlines()
+
+# https://stackoverflow.com/a/25736515
+def convert_to_sentences( text_blob ):
+	return re.split( r'(?<=[^A-Z].[.?]) +(?=[A-Z])' , text_blob )
+
+# Better Representation of PDF Layout , but We Don't Want Side By Side Pages
+def convert_pdf_to_text_method_1( pdf_file_path ):
+	result = ""
+	with open( pdf_file_path , "rb" ) as f:
+		pdf = pdftotext.PDF( f )
+		print( f"Total Pages === { len( pdf ) }" )
+		for page in pdf:
+			result += page
+			#print( page )
+	return result
+
+def convert_pdf_to_text_method_2( pdf_file_path ):
+	return pdfminer.high_level.extract_text( pdf_file_path )
+
+def remove_line_breaks( text_blob ):
+	#return text_blob.rstrip( '\r\n' )
+	#return ''.join( text_blob.splitlines() )
+	#return text_blob.replace( "\r" , "" ).replace( "\n" , "" )
+	return text_blob.replace( "\n" , "" )
+
+def remove_citations_method_1( text ):
+	return re.sub( r'\((.+?)\)' , '' , text )
+
+# https://stackoverflow.com/a/16826935
+def remove_citations_method_2( text ):
+	# author = "(?:[A-Z][A-Za-z'`-]+)"
+	# etal = "(?:et al.?)"
+	# additional = "(?:,? (?:(?:and |& )?" + author + "|" + etal + "))"
+	# year_num = "(?:19|20)[0-9][0-9]"
+	# page_num = "(?:, p.? [0-9]+)?"  # Always optional
+	# year = "(?:, *"+year_num+page_num+"| *\("+year_num+page_num+"\))"
+	# regex = "(" + author + additional+"*" + year + ")"
+	pass
+
+def convert_to_markdown_unordered_list( text_blob ):
+	#text_blob = " ".join( text_blob.split() )
+	sentences = convert_to_sentences( text_blob )
+	unordered_list = [ f"- {x}"  for x in sentences ]
+	unordered_list_raw_markdown = "\n".join( unordered_list )
+	return ( unordered_list , unordered_list_raw_markdown )
+
+
+# https://stackoverflow.com/a/10368126
+# Windows: CRLF (\r\n)
+# Linux and other Unices: LF (\n)
+# Old Mac: CR (\r)
+
+if __name__ == "__main__":
+
+	#step_one = convert_pdf_to_text_method_1( sys.argv[1] )
+	step_one = convert_pdf_to_text_method_2( sys.argv[1] )
+
+	final_md_lines = []
+	for paragraph in step_one.split( "\r" ):
+		paragraph = paragraph.replace( "\n" , " " )
+		paragraph = remove_citations_method_1( paragraph )
+		( unordered_list , unordered_list_string ) = convert_to_markdown_unordered_list( paragraph )
+		final_md_lines += unordered_list
+	final_md_string = "\n".join( final_md_lines )
+	print( final_md_lines )
+	print( len( final_md_lines ) )
+	print( final_md_string )
+	pyperclip.copy( final_md_string )
