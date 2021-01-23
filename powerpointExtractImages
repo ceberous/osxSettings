@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import sys
-import pptx
+import pptx # python-pptx
+import io
+import PIL # pillow
 
 powerpoint = pptx.Presentation( sys.argv[1] )
 print( powerpoint )
@@ -10,9 +12,18 @@ for slide_index , slide in enumerate( powerpoint.slides ):
 		print( f"\tProcessing Shape [{shape_index+1}] of {len(slide.shapes)}" )
 		print( f"\t\tShape Type === {shape.shape_type}" )
 		if hasattr( shape , "image" ):
-			#print( shape.image.content_type )
-			image = shape.image
-			image_bytes = image.blob
-			image_filename = f"image-{slide_index}-{shape_index}.jpeg"
-			with open( image_filename , "wb" ) as f:
-				f.write( image_bytes )
+			# https://github.com/scanny/python-pptx/blob/master/pptx/shapes/picture.py
+			pil_image = PIL.Image.open( io.BytesIO( shape.image.blob ) )
+
+			#print( f"\t\t\tImage Type === {shape.image.content_type}" )
+			extension = shape.image.content_type.split('image/')[1]
+			# https://stackoverflow.com/questions/14103891/convert-emf-wmf-files-to-png-jpg
+			if extension == "x-wmf": # only works on windows
+				extension = "png"
+			image_filename = f"image-{slide_index}-{shape_index}.{extension}"
+			pil_image.save( image_filename , quality=100 )
+			#pil_image.show()
+			# image = shape.image
+			# image_bytes = image.blob
+			# with open( image_filename , "wb" ) as f:
+			# 	f.write( image_bytes )
