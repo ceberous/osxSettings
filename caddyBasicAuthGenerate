@@ -1,0 +1,10 @@
+#!/bin/bash
+# https://caddyserver.com/docs/caddyfile/directives/basicauth
+username=$(pwgen -1 $1 | shasum -a 256 | awk '{ print $1; }' | head -c 20 )
+password=$(pwgen -1 $1 | shasum -a 256 | awk '{ print $1; }' | head -c 20 )
+echo "Username === $username"
+echo "Password === $password"
+bcrypted_password=$(htpasswd -nbBC 10 $username $password)
+echo "Bcrypted Password === $bcrypted_password"
+echo "Bcrypted Password Base64 Encoded ==="
+node -e "try{var a1=new Buffer.from(process.argv[1]);console.log(a1.toString('base64'));}catch(e){console.log('error encoding base64');}" "$bcrypted_password"

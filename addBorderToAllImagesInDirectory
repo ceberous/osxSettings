@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import sys
+import numpy as np
+from pathlib import Path
+from natsort import humansorted
+from PIL import Image , ImageOps
+from pprint import pprint
+
+# similar to this https://39363.org/IMAGE_BUCKET/1604548238785-177592976.png
+
+ALLOWED_EXTENSIONS = [ ".png" , ".jpeg" , ".jpg" ]
+BaseDirectoryPosixPath = Path( sys.argv[1] if len(sys.argv) > 1 else Path.cwd() )
+FilesPosixInBaseDirectory = BaseDirectoryPosixPath.glob( '**/*' )
+FilesPosixInBaseDirectory = [ x for x in FilesPosixInBaseDirectory if x.is_file() ]
+FilesPosixInBaseDirectory = [ x for x in FilesPosixInBaseDirectory if x.suffix in ALLOWED_EXTENSIONS ]
+FilesPosixInBaseDirectory = humansorted( FilesPosixInBaseDirectory )
+
+images = []
+total_size_x = 0
+total_size_y = 0
+border_color = ( 252 , 81 , 246 )
+for index , image in enumerate( FilesPosixInBaseDirectory ):
+	pil = Image.open( str( image ) )
+	img_with_border = ImageOps.expand( pil , border=10 , fill=border_color )
+	total_size_x += img_with_border.size[0]
+	total_size_y += img_with_border.size[1]
+	img_with_border.save( str( image ) )
+
+print( f"Total X Size === {total_size_x}" )
+print( f"Total Y Size === {total_size_y}" )

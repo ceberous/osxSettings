@@ -1,0 +1,4 @@
+#!/bin/bash
+# https://stackoverflow.com/a/61700520
+mkdir -p images && pdftoppm -jpeg -r 1200 "$1" images/pg
+

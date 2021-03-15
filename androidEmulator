@@ -1,0 +1,3 @@
+#!/bin/bash
+#~/Library/Android/sdk/emulator/emulator -list-avds
+~/Library/Android/sdk/emulator/emulator -gpu host -feature HVF -avd pixel_3a_api_29
