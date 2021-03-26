@@ -1,0 +1,3 @@
+#!/bin/bash
+# https://github.com/drsigned/bypass403
+echo "$1" | bypass403 -iL -
