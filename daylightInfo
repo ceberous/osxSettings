@@ -134,12 +134,13 @@ function GET_DATA( location_url ) {
 
 ( async ()=> {
 
-	const args = parser.parseArgs();
-	console.log( args );
-	let location = args.location;
-	if ( args.search ) {
-		location = await SEARCH( args.search );
-	}
+	//const args = parser.parseArgs();
+	//console.log( args );
+	//let location = args.location;
+	//if ( args.search ) {
+		//location = await SEARCH( args.search );
+	//}
+	location = await SEARCH( "45424" );
 	console.log( location );
 	const data = await GET_DATA( location );
 	console.log( data.reverse() );

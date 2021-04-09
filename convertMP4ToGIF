@@ -1,0 +1,9 @@
+#!/bin/bash
+# https://superuser.com/a/1256459
+FPS=24
+dimensions=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$1")
+width=$(echo $dimensions | cut -d x -f 1)
+height=$(echo $dimensions | cut -d x -f 2)
+filename=$(basename "$1" | cut -d . -f 1)
+filterString="fps=$FPS,scale=$width:-1:flags=lanczos,split [o1] [o2];[o1] palettegen [p]; [o2] fifo [o3];[o3] [p] paletteuse"
+ffmpeg -i "$1" -filter_complex "$filterString" "$filename.gif"
