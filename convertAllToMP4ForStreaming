@@ -2,7 +2,7 @@
 for file in *
 do
 	extension=$(echo "$file" | sed 's/^.*\.//')
-	if [ "$extension" = "mkv" ] || [ "$extension" = "webm" ] || [ "$extension" = "mp4" ]; then
+	if [ "$extension" = "avi" ] || [ "$extension" = "mkv" ] || [ "$extension" = "webm" ] || [ "$extension" = "mp4" ] || [ "$extension" = "mov" ] || [ "$extension" = "m4v" ] || [ "$extension" = "mpg" ] || [ "$extension" = "flv" ]; then
 		dirname=$(dirname "$file")
 		basename=$(basename "$file" | cut -d. -f1)
 		outputpath=$(echo "$dirname"/"$basename"_2.mp4)

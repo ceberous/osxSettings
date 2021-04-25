@@ -1,0 +1,3 @@
+#!/bin/bash
+# https://superuser.com/a/269711
+sudo killall Spotlight

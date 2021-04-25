@@ -1,0 +1,2 @@
+#!/bin/bash
+/usr/bin/osascript -e 'tell application "Safari" to set miniaturized of every window to true'

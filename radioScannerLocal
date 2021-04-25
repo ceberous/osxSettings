@@ -1,0 +1,4 @@
+#!/bin/bash
+iina https://broadcastify.cdnstream1.com/9121 --mpv-force-media-title="Miami County Police, Fire and EMS - Central"
+iina https://broadcastify.cdnstream1.com/160 --mpv-force-media-title="Dayton and Montgomery County Fire and EMS"
+iina https://broadcastify.cdnstream1.com/10179 --mpv-force-media-title="Dayton Police and Fire"
