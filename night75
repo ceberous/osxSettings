@@ -1,0 +1,8 @@
+#!/bin/bash
+# https://39363.org/IMAGE_BUCKET/1619604231944-237327264.jpeg
+# https://github.com/jonls/redshift
+# Redshift Kelvin Light Range = 1000K < 6500K < ???
+# But ideally , for redshift , 1000k < 6500K
+# So range steps , 1000K (100%) , 1625K (~75%) , 3250K (50%) , 4875K (25%) , 6500K (0%)
+sudo pkill -9 redshift
+redshift -O 1300K -b 0.5 &

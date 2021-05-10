@@ -1,0 +1,9 @@
+#!/bin/bash
+# https://superuser.com/questions/441361/strip-metadata-from-all-formats-with-ffmpeg
+dirname=$(dirname "$1")
+basename=$(basename "$1")
+outputpath=$(echo "$dirname"/"2-$basename")
+echo $outputpath
+ffmpeg -i "$1" -map_metadata -1 -c:v copy -c:a copy "$outputpath"
+rm "$1"
+mv "$outputpath" "$1"

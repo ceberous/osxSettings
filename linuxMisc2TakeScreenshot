@@ -3,6 +3,13 @@ import sys
 import requests
 import pyperclip
 import subprocess
+import json
+
+def read_json( file_path ):
+	with open( file_path ) as f:
+		return json.load( f )
+Personal = read_json( "/Users/morpheous/Documents/Misc/CONFIG2/personal/ImageUploadServer/user.json" )
+
 
 result = subprocess.run( [ 'screencapture' , '-i' , '/tmp/linuxmisc2screencapture.jpeg' ] , capture_output=True , universal_newlines=True )
 if result.returncode != 0:
@@ -10,7 +17,7 @@ if result.returncode != 0:
 with open( '/tmp/linuxmisc2screencapture.jpeg' , "rb" ) as upload_file:
 	file_list = { "file": upload_file }
 	headers = {
-		'key': '',
+		'key': Personal["key"] ,
 	}
 	url = 'https://39363.org/images/upload'
 	response = requests.post( url , headers=headers , files=file_list )

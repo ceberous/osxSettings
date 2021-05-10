@@ -4,6 +4,11 @@ import requests
 import pyperclip
 input_path = sys.argv[ 1 ]
 
+def read_json( file_path ):
+	with open( file_path ) as f:
+		return json.load( f )
+Personal = read_json( "/Users/morpheous/Documents/Misc/CONFIG2/personal/ImageUploadServer/user.json" )
+
 def write_text( file_path , text_lines_list ):
 	#with open( file_path , 'a', encoding='utf-8' ) as f:
 	with open( file_path , 'w', encoding='utf-8' ) as f:
@@ -18,7 +23,7 @@ if "Typora" in input_path:
 	write_text( "/Users/morpheous/TMP2/typorawadu" , input_path )
 	input_path = input_path.split( "Typora/?u=" )[ 1 ]
 	headers = {
-		'key': '',
+		'key': Personal["key"] ,
 		'url': input_path
 	}
 	url = 'https://39363.org/images/upload-url'
@@ -29,7 +34,7 @@ if "Typora" in input_path:
 
 elif "http" in input_path:
 	headers = {
-		'key': '',
+		'key': Personal["key"] ,
 		'url': input_path
 	}
 	url = 'https://39363.org/images/upload-url'
@@ -41,10 +46,11 @@ else:
 	with open( input_path , "rb" ) as upload_file:
 		file_list = { "file": upload_file }
 		headers = {
-			'key': '',
+			'key': Personal["key"]
 		}
 		url = 'https://39363.org/images/upload'
 		response = requests.post( url , headers=headers , files=file_list )
 		response.raise_for_status()
 		print( response.text )
-		pyperclip.copy( response.text )
+		#pyperclip.copy( response.text )
+		pyperclip.copy( f"![]({response.text})" )

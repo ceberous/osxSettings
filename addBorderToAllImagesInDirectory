@@ -20,11 +20,18 @@ total_size_x = 0
 total_size_y = 0
 border_color = ( 252 , 81 , 246 )
 for index , image in enumerate( FilesPosixInBaseDirectory ):
-	pil = Image.open( str( image ) )
-	img_with_border = ImageOps.expand( pil , border=10 , fill=border_color )
-	total_size_x += img_with_border.size[0]
-	total_size_y += img_with_border.size[1]
-	img_with_border.save( str( image ) )
+	try:
+		pil = Image.open( str( image ) )
+		if pil.mode in ( "RGBA" , "P" ):
+			pil = pil.convert( "RGB" )
+			pil.save( str( image ) , format='JPEG' , quality=100 )
+			pil = Image.open( str( image ) )
+		img_with_border = ImageOps.expand( pil , border=10 , fill=border_color )
+		total_size_x += img_with_border.size[0]
+		total_size_y += img_with_border.size[1]
+		img_with_border.save( str( image ) )
+	except Exception as e:
+		print( e )
 
 print( f"Total X Size === {total_size_x}" )
 print( f"Total Y Size === {total_size_y}" )

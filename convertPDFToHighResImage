@@ -1,0 +1,4 @@
+#!/bin/bash
+# https://stackoverflow.com/a/13784772
+DPI="2000"
+convert -density $DPI -trim "$1" -quality 100 test.jpg
