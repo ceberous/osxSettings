@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# https://stackoverflow.com/questions/5566310/how-to-recursively-find-and-list-the-latest-modified-files-in-a-directory-with-s
+# ls-recent: list files in a directory tree, most recently modified first
+#
+# Usage: ls-recent path [-10 | more]
+#
+# Where "path" is a path to target directory, "-10" is any argument to pass
+# to "head" to limit the number of entries, and "more" is a special argument
+# in place of "-10" which calls the pager "more" instead of "head".
+if [ "more" = "$2" ]; then
+   H=more; N=''
+else
+   H=head; N=$2
+fi
+
+find "$1" -type f -print0 |xargs -0 gstat --format '%Y :%y %n' \
+    |sort -nr |cut -d: -f2- |$H $N
