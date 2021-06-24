@@ -46,7 +46,7 @@ def get_clipboard_image_osx():
 				img_bytes = io.BytesIO()
 				image.save( img_bytes , format='PNG' )
 				base64_string = codecs.decode( codecs.encode( img_bytes.getvalue() , "base64" ) , "ascii" )
-				return base64_string.replace( '\n' , ' ' ).replace( '\r' , '' )
+				return base64_string.replace( '\n' , '' ).replace( '\r' , '' )
 	except Exception as e:
 		try:
 			with tempfile.TemporaryDirectory() as temp_dir:
@@ -63,7 +63,7 @@ def get_clipboard_image_osx():
 					# image.save( img_bytes , format='JPEG' )
 					image.save( img_bytes , format='PNG' )
 					base64_string = codecs.decode( codecs.encode( img_bytes.getvalue() , "base64" ) , "ascii" )
-					return base64_string.replace( '\n' , ' ' ).replace( '\r' , '' )
+					return base64_string.replace( '\n' , '' ).replace( '\r' , '' )
 		except Exception as e:
 			# print( image_data )
 			return False
