@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+import sys
+from colorthief import ColorThief
+
+color_thief = ColorThief( sys.argv[1] )
+
+dominant_color = color_thief.get_color(quality=1)
+palette = color_thief.get_palette(color_count=6)
+
+print( f"Dominant Color === {dominant_color}" )
+print( f"Dominant Color === {'#%02x%02x%02x' % dominant_color}" )
+print( f"Color Palette === {palette}" )
+
+palette_hex = [ ('#%02x%02x%02x' % x) for x in palette ]
+print( f"Color Palette === {palette_hex}" )
+
+palette_hex_for_url = [ ('%02x%02x%02x' % x) for x in palette  ]
+color_palette_url_part = "-".join( palette_hex_for_url )
+url = f"https://coolors.co/{color_palette_url_part}"
+print( url )
