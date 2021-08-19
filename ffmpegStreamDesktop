@@ -1,0 +1,2 @@
+#!/bin/bash
+ffmpeg -f avfoundation -framerate 60 -s 1920x1080 -i "0" -f mpeg1video -b:v 1000k -r 60 -vf scale=1920:1080  udp://localhost:4005?pkt_size=1000

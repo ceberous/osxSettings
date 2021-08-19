@@ -1,5 +1,5 @@
 #!/bin/bash
-BinaryName="ChromeLauncher"
+BinaryName="$1"
 rm -rf ./bin/
 
 # https://stackoverflow.com/questions/25051623/golang-compile-for-all-platforms-in-windows-7-32-bit
@@ -15,6 +15,9 @@ declare -a darwin_architectures=(
 )
 declare -a windows_architectures=(
 	"amd64"
+)
+declare -a web_architectures=(
+	"wasm"
 )
 
 for architecture in "${linux_architectures[@]}"
@@ -32,5 +35,11 @@ done
 for architecture in "${windows_architectures[@]}"
 do
 	echo "Building Windows: $architecture"
-	GOOS=windows GOARCH=$architecture go build -o bin/windows/$architecture/$BinaryName
+	GOOS=windows GOARCH=$architecture go build -o bin/windows/$architecture/$BinaryName.exe
+done
+
+for architecture in "${web_architectures[@]}"
+do
+        echo "Building Web: $architecture"
+        GOOS=js GOARCH=$architecture go build -o bin/windows/$architecture/$BinaryName.wasm
 done
