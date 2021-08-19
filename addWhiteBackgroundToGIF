@@ -4,7 +4,7 @@ basename=$(basename "$1" | cut -d. -f1)
 outputpath=$(echo "$dirname"/"$basename-BG-WHITE".gif)
 mkdir /tmp/add-white-background-to-gif-5756124
 echo "Inflating GIF"
-convert "$1" /tmp/add-white-background-to-gif-5756124/frame-%02d.gif
+convert "$1" /tmp/add-white-background-to-gif-5756124/frame-%06d.gif
 for file in /tmp/add-white-background-to-gif-5756124/*
 do
 	extension=$(echo "$file" | sed 's/^.*\.//')
