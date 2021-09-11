@@ -84,7 +84,7 @@ def get_image_info( element ):
 
 if __name__ == "__main__":
 	input_file_path_posix = Path( sys.argv[ 1 ] )
-	output_base_path = Path.cwd().joinpath( input_file_path_posix.stem )
+	output_base_path = input_file_path_posix.parent.joinpath( input_file_path_posix.stem )
 	shutil.rmtree( output_base_path , ignore_errors=True )
 	output_base_path.mkdir( parents=True , exist_ok=True )
 
