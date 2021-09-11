@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+import sys
+import io
+from pprint import pprint
+from pathlib import Path
+from tqdm import tqdm
+from binascii import b2a_hex
+import shutil
+
+from pdfminer.high_level import extract_pages
+from pdfminer.pdfparser import PDFParser
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfinterp import resolve1
+
+from PIL import Image
+
+def get_meta_data( input_file_path ):
+	input_file = open( input_file_path , 'rb' )
+	input_parser = PDFParser( input_file )
+	input_document = PDFDocument( input_parser )
+	total_pages = resolve1( input_document.catalog['Pages'] )['Count']
+	return {
+		"total_pages": total_pages ,
+	}
+
+def get_page_layouts( input_file_path , total_pages ):
+	generator = extract_pages( input_file_path )
+	print( "Scanning Page Layouts" )
+	page_layouts = []
+	for page_layout in tqdm( generator , total=total_pages ):
+		page_layouts.append( page_layout )
+	return page_layouts
+
+def get_lt_figures( page_layout ):
+	lt_figures = []
+	for index , element in enumerate( page_layout ):
+		class_name = type(element).__name__
+		if class_name == "LTTextBoxHorizontal":
+			pass
+		elif class_name == "LTRect":
+			pass
+		elif class_name == "LTFigure":
+			lt_figures.append( element )
+		elif class_name == "LTCurve":
+			pass
+		elif class_name == "LTLine":
+			pass
+		else:
+			#print( class_name )
+			pass
+	return lt_figures
+
+def get_image_type( stream_first_4_bytes ):
+	file_type = False
+	bytes_as_hex = b2a_hex( stream_first_4_bytes ).decode()
+	if bytes_as_hex.startswith( 'ffd8' ):
+		file_type = 'jpeg'
+	elif bytes_as_hex == '89504e47':
+		file_type = 'png'
+	elif bytes_as_hex == '47494638':
+		file_type = 'gif'
+	elif bytes_as_hex.startswith('424d'):
+		file_type = 'bmp'
+	return file_type
+
+def get_image_info( element ):
+	image = None
+	try:
+		image = Image.open( io.BytesIO( element._objs[ 0 ].stream.rawdata ) )
+	except Exception as e:
+		return False
+	#image.show()
+	image_info = {
+		"type": get_image_type( element._objs[ 0 ].stream.rawdata[ 0 : 4 ] ) ,
+		"width": element._objs[ 0 ].width ,
+		"height": element._objs[ 0 ].height ,
+		"bounding_box": {
+			'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
+			'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
+		} ,
+		"pil_image": image
+	}
+	return image_info
+
+if __name__ == "__main__":
+	input_file_path_posix = Path( sys.argv[ 1 ] )
+	output_base_path = Path.cwd().joinpath( input_file_path_posix.stem )
+	shutil.rmtree( output_base_path , ignore_errors=True )
+	output_base_path.mkdir( parents=True , exist_ok=True )
+
+	meta_data = get_meta_data( sys.argv[ 1 ] )
+	page_layouts = get_page_layouts( sys.argv[ 1 ] , meta_data["total_pages"] )
+	for page_layout_index , page_layout in enumerate( page_layouts ):
+		figures = get_lt_figures( page_layout )
+		for figure_index , figure in enumerate( figures ):
+			image_info = get_image_info( figure )
+			if image_info is not False:
+				if image_info["type"] is not False:
+					image_info["image_save_path"] = output_base_path.joinpath( f"Page - {page_layout_index+1} - {figure_index+1}.{image_info['type']}" )
+					pprint( image_info )
+					image_info["pil_image"].save( str( image_info["image_save_path"] ) )
