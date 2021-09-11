@@ -6,13 +6,15 @@ from pathlib import Path
 from tqdm import tqdm
 from binascii import b2a_hex
 import shutil
+import tempfile
 
 from pdfminer.high_level import extract_pages
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import resolve1
 
-from PIL import Image
+from PIL import Image , ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def get_meta_data( input_file_path ):
 	input_file = open( input_file_path , 'rb' )
@@ -46,8 +48,7 @@ def get_lt_figures( page_layout ):
 		elif class_name == "LTLine":
 			pass
 		else:
-			#print( class_name )
-			pass
+			print( class_name )
 	return lt_figures
 
 def get_image_type( stream_first_4_bytes ):
@@ -61,26 +62,68 @@ def get_image_type( stream_first_4_bytes ):
 		file_type = 'gif'
 	elif bytes_as_hex.startswith('424d'):
 		file_type = 'bmp'
+	else:
+		print( bytes_as_hex )
+	print( file_type )
 	return file_type
 
 def get_image_info( element ):
-	image = None
 	try:
+		# print( element._objs[ 0 ].stream.rawdata )
 		image = Image.open( io.BytesIO( element._objs[ 0 ].stream.rawdata ) )
+		return {
+			"type": get_image_type( element._objs[ 0 ].stream.rawdata[ 0 : 4 ] ) ,
+			"width": element._objs[ 0 ].width ,
+			"height": element._objs[ 0 ].height ,
+			"bounding_box": {
+				'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
+				'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
+			} ,
+			"pil_image": image
+		}
 	except Exception as e:
-		return False
-	#image.show()
-	image_info = {
-		"type": get_image_type( element._objs[ 0 ].stream.rawdata[ 0 : 4 ] ) ,
-		"width": element._objs[ 0 ].width ,
-		"height": element._objs[ 0 ].height ,
-		"bounding_box": {
-			'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
-			'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
-		} ,
-		"pil_image": image
-	}
-	return image_info
+		# print( "Failed to Parse Raw Data" )
+		# print( e )
+		# pillow_modes = [ "1" , "L" , "P" , "RGB" , "RGBA" , "CMYK" , "YCbCr" , "LAB" , "HSV" , "I" , "F" , "LA" , "PA" ]
+		# pillow_extra_modes = [ "LA" , "PA" , "RGBX" , "RGBa" , "La" , "I;16" , "I;16L" , "I;16B" , "I;16N" , "BGR;15" , "BGR;16" , "BGR;24" , "BGR;32" ]
+		# pillow_modes.extend( pillow_extra_modes )
+		pillow_modes = [ "RGB" ]
+		candidate_images = []
+		try:
+			# image_bytes = io.BytesIO( element._objs[ 0 ].stream.rawdata )
+			# image = Image.frombytes( '1' , image_object.srcsize, image_object.stream.get_data(), 'raw')
+			# with open(image_object.name + '.bmp', 'wb') as fp:
+			# 	image.save(fp)
+			# print( vars( element._objs[ 0 ] ) )
+			# color_bits = element._objs[ 0 ].bits
+			# image_type = "png"
+			# print( vars( element._objs[ 0 ].colorspace[0] ) )
+			# print( vars( element._objs[ 0 ].colorspace[0].doc ) )
+			# https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes
+			for index , pillow_mode in enumerate( pillow_modes ):
+				try:
+					image = Image.frombytes( pillow_mode , element._objs[ 0 ].srcsize , element._objs[ 0 ].stream.get_data() , 'raw' )
+					candidate_images.append({
+						"type": "png" ,
+						"mode": pillow_mode ,
+						"width": element._objs[ 0 ].width ,
+						"height": element._objs[ 0 ].height ,
+						"bounding_box": {
+							'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
+							'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
+						} ,
+						"pil_image": image
+					})
+				except Exception as e:
+					pass
+			# pprint( candidate_images )
+			return candidate_images
+		except Exception as e:
+			print( e )
+			return False
+		# print( vars( element._objs[ 0 ].stream ) )
+	# image.show()
+
 
 if __name__ == "__main__":
 	input_file_path_posix = Path( sys.argv[ 1 ] )
@@ -95,7 +138,25 @@ if __name__ == "__main__":
 		for figure_index , figure in enumerate( figures ):
 			image_info = get_image_info( figure )
 			if image_info is not False:
-				if image_info["type"] is not False:
-					image_info["image_save_path"] = output_base_path.joinpath( f"Page - {page_layout_index+1} - {figure_index+1}.{image_info['type']}" )
-					pprint( image_info )
-					image_info["pil_image"].save( str( image_info["image_save_path"] ) )
+				if isinstance( image_info , list ):
+					for image_info_index , candidate in enumerate( image_info ):
+						try:
+							candidate["image_save_path"] = output_base_path.joinpath( f"Page - {page_layout_index+1} - {figure_index+1} - {candidate['mode']}.{candidate['type']}" )
+							pprint( image_info )
+							candidate["pil_image"].save( str( candidate["image_save_path"] ) )
+						except Exception as e:
+							print( e )
+				else:
+					if image_info["type"] is not False:
+						image_info["image_save_path"] = output_base_path.joinpath( f"Page - {page_layout_index+1} - {figure_index+1}.{image_info['type']}" )
+						pprint( image_info )
+						image_info["pil_image"].save( str( image_info["image_save_path"] ) )
+					else:
+						pprint( image_info )
+
+
+
+
+
+
+
