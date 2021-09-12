@@ -64,8 +64,24 @@ def get_image_type( stream_first_4_bytes ):
 		file_type = 'bmp'
 	else:
 		print( bytes_as_hex )
-	print( file_type )
 	return file_type
+
+# def get_image_info_from_stream_raw_data( stream ):
+# 	try:
+# 		image = Image.open( io.BytesIO( element._objs[ 0 ].stream.rawdata ) )
+# 		return {
+# 			"type": get_image_type( element._objs[ 0 ].stream.rawdata[ 0 : 4 ] ) ,
+# 			"width": element._objs[ 0 ].width ,
+# 			"height": element._objs[ 0 ].height ,
+# 			"bounding_box": {
+# 				'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
+# 				'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
+# 			} ,
+# 			"pil_image": image
+# 		}
+# 	except Exception as e:
+# 		print( e )
+# 		return False
 
 def get_image_info( element ):
 	try:
@@ -84,9 +100,10 @@ def get_image_info( element ):
 	except Exception as e:
 		# print( "Failed to Parse Raw Data" )
 		# print( e )
+		# https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes
 		# pillow_modes = [ "1" , "L" , "P" , "RGB" , "RGBA" , "CMYK" , "YCbCr" , "LAB" , "HSV" , "I" , "F" , "LA" , "PA" ]
 		# pillow_extra_modes = [ "LA" , "PA" , "RGBX" , "RGBa" , "La" , "I;16" , "I;16L" , "I;16B" , "I;16N" , "BGR;15" , "BGR;16" , "BGR;24" , "BGR;32" ]
-		# pillow_modes.extend( pillow_extra_modes )
+		#pillow_modes.extend( pillow_extra_modes )
 		pillow_modes = [ "RGB" ]
 		candidate_images = []
 		try:
@@ -99,27 +116,51 @@ def get_image_info( element ):
 			# image_type = "png"
 			# print( vars( element._objs[ 0 ].colorspace[0] ) )
 			# print( vars( element._objs[ 0 ].colorspace[0].doc ) )
-			# https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes
+
+			# https://github.com/pdfminer/pdfminer.six/issues/144
+			# https://pillow.readthedocs.io/en/stable/reference/Image.html?highlight=frombytes#PIL.Image.frombytes
 			for index , pillow_mode in enumerate( pillow_modes ):
 				try:
-					image = Image.frombytes( pillow_mode , element._objs[ 0 ].srcsize , element._objs[ 0 ].stream.get_data() , 'raw' )
-					candidate_images.append({
-						"type": "png" ,
-						"mode": pillow_mode ,
-						"width": element._objs[ 0 ].width ,
-						"height": element._objs[ 0 ].height ,
-						"bounding_box": {
-							'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
-							'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
-						} ,
-						"pil_image": image
-					})
+					if "srcsize" not in element._objs[ 0 ]:
+						source_size = ( element._objs[ 0 ].width , element._objs[ 0 ].height )
+					else:
+						source_size = element._objs[ 0 ].srcsize
+
+					if "stream" not in element._objs[ 0 ]:
+						#print( "here ?????" )
+						#print( vars( element._objs[ 0 ]._objs[ 0 ] ) )
+						image = Image.open( io.BytesIO( element._objs[ 0 ]._objs[ 0 ].stream.rawdata ) )
+						return {
+							"type": get_image_type( element._objs[ 0 ]._objs[ 0 ].stream.rawdata[ 0 : 4 ] ) ,
+							"width": element._objs[ 0 ].width ,
+							"height": element._objs[ 0 ].height ,
+							"bounding_box": {
+								'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
+								'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
+							} ,
+							"pil_image": image
+						}
+					else:
+						figure_bytes = element._objs[ 0 ].stream.get_data()
+						image = Image.frombytes( pillow_mode , source_size , figure_bytes , 'raw' )
+						candidate_images.append({
+							"type": "png" ,
+							"mode": pillow_mode ,
+							"width": element._objs[ 0 ].width ,
+							"height": element._objs[ 0 ].height ,
+							"bounding_box": {
+								'x1': element._objs[ 0 ].x0 , 'y1': element._objs[ 0 ].y0 ,
+								'x2': element._objs[ 0 ].x1 , 'y2': element._objs[ 0 ].y1 ,
+							} ,
+							"pil_image": image
+						})
 				except Exception as e:
+					print( e )
 					pass
 			# pprint( candidate_images )
 			return candidate_images
 		except Exception as e:
-			print( e )
+			#print( e )
 			return False
 		# print( vars( element._objs[ 0 ].stream ) )
 	# image.show()
@@ -153,10 +194,3 @@ if __name__ == "__main__":
 						image_info["pil_image"].save( str( image_info["image_save_path"] ) )
 					else:
 						pprint( image_info )
-
-
-
-
-
-
-
