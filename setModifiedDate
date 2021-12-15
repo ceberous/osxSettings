@@ -1,0 +1,4 @@
+#!/bin/bash
+# https://www.man7.org/linux/man-pages/man1/touch.1.html
+#touch -mt 200801120000 "$1"
+touch -mt "$2" "$1"

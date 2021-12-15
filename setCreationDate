@@ -1,0 +1,5 @@
+#!/bin/bash
+# https://stackoverflow.com/a/22570624
+# https://apple.stackexchange.com/a/99599
+#SetFile -d '12/31/1999 23:59:59' "$1"
+SetFile -d "$2" "$1"
