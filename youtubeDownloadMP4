@@ -20,11 +20,11 @@ VideoCodec=$(ffprobe "$input_file" 2>&1 >/dev/null | grep Stream.*Video | sed -e
 echo "Current Audio Codec = $AudioCodec"
 echo "Current Video Codec = $VideoCodec"
 if [ "$VideoCodec" != "h264" ] && [ "$AudioCodec" != "aac" ]; then
-	echo "ReEncodnig Video and Audio"
+	echo "ReEncoding Video and Audio"
 	echo "New Filename = $output_file_temp"
 	ffmpeg -i "$input_file" -c:v libx264 -c:a aac -strict -2 "$output_file_temp"
 elif [ "$VideoCodec" != "h264" ] && [ "$AudioCodec" = "aac" ]; then
-	echo "ReEncodnig Video"
+	echo "ReEncoding Video"
 	echo "New Filename = $output_file_temp"
 	ffmpeg -i "$input_file" -c:v libx264 -c:a copy -strict -2 "$output_file_temp"
 elif [ "$VideoCodec" = "h264" ] && [ "$AudioCodec" != "aac" ]; then
