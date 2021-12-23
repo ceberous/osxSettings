@@ -1,0 +1,6 @@
+#!/bin/bash
+youtube-dl \
+--cookies="/Users/morpheous/Library/CloudStorage/Tresorit-326245/Misc/Cookies/twitch_cookies.txt" \
+-q -o - "$1" | /Applications/IINA.app/Contents/MacOS/iina-cli --stdin \
+#--mpv-cache-secs=30
+#--mpv-cache
