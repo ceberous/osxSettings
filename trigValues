@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
-
 import sys
 import math
-angle_degrees = float( sys.argv[1] )
+from decimal import Decimal
+NUMBER_OF_DECIMAL_PLACES = 7
+PRECISION = Decimal( f".{ '0' * ( NUMBER_OF_DECIMAL_PLACES - 1 ) }1" )
 
-print( f"Sine of {angle_degrees}° === {math.sin(math.radians(angle_degrees))} ° === {math.sin(angle_degrees)} Radians" )
-print( f"Cosine of {angle_degrees}° === {math.cos(math.radians(angle_degrees))} ° === {math.cos(angle_degrees)} Radians" )
-print( f"Tan of {angle_degrees}° === {math.tan(math.radians(angle_degrees))} ° === {math.tan(angle_degrees)} Radians" )
+angle_degrees = float( sys.argv[1] )
+angle_radians = math.radians( angle_degrees )
+
+def get_precise( function_pointer , function_input ):
+	return ( Decimal( function_pointer( function_input ) ).quantize( PRECISION ) )
+
+print( f"Sine of {angle_degrees}° === {get_precise( math.sin , angle_radians )} ° === {get_precise( math.sin , angle_degrees )} Radians" )
+print( f"Cosine of {angle_degrees}° === {get_precise( math.cos , angle_radians )} ° === {get_precise( math.cos , angle_degrees )} Radians" )
+print( f"Tan of {angle_degrees}° === {get_precise( math.tan , angle_radians )} ° === {get_precise( math.tan , angle_degrees )} Radians" )
 
 print("")
-
 try:
-	print( f"Arc Sine of {angle_degrees}° === {math.asin(math.radians(angle_degrees))} ° === {math.asin(angle_degrees)} Radians" )
+	print( f"Arc Sine of {angle_degrees}° === {get_precise( math.asin , angle_radians )} ° === {get_precise( math.asin , angle_degrees )} Radians" )
 except Exception as e:
 	pass
 try:
-	print( f"Arc Cosine of {angle_degrees}° === {math.acos(math.radians(angle_degrees))} ° === {math.acos(angle_degrees)} Radians" )
+	print( f"Arc Cosine of {angle_degrees}° === {get_precise( math.acos , angle_radians )} ° === {get_precise( math.acos , angle_degrees )} Radians" )
 except Exception as e:
 	pass
-
 try:
-	print( f"Arc Tan of {angle_degrees}° === {math.atan(math.radians(angle_degrees))} ° === {math.atan(angle_degrees)} Radians" )
+	print( f"Arc Tan of {angle_degrees}° === {get_precise( math.tan , angle_radians )} ° === {get_precise( math.atan , angle_degrees )} Radians" )
 except Exception as e:
 	pass

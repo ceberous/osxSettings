@@ -1,0 +1,5 @@
+#!/bin/bash
+find . -type f -print0 \
+| xargs -0 -n1 -I{} \
+stat  -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S' "{}" \
+| sort -rn | head -n 50
