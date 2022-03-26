@@ -17,14 +17,14 @@ print( f"Tan of {angle_degrees}° === {get_precise( math.tan , angle_radians )} 
 
 print("")
 try:
-	print( f"Arc Sine of {angle_degrees}° === {get_precise( math.asin , angle_radians )} ° === {get_precise( math.asin , angle_degrees )} Radians" )
+	print( f"Arc Sine of {angle_degrees}° === {get_precise( math.degrees , get_precise( math.asin , angle_degrees ) )} ° === {get_precise( math.asin , angle_degrees )} Radians" )
 except Exception as e:
 	pass
 try:
-	print( f"Arc Cosine of {angle_degrees}° === {get_precise( math.acos , angle_radians )} ° === {get_precise( math.acos , angle_degrees )} Radians" )
+	print( f"Arc Cosine of {angle_degrees}° === {get_precise( math.degrees , get_precise( math.acos , angle_degrees ) )} ° === {get_precise( math.acos , angle_degrees )} Radians" )
 except Exception as e:
 	pass
 try:
-	print( f"Arc Tan of {angle_degrees}° === {get_precise( math.tan , angle_radians )} ° === {get_precise( math.atan , angle_degrees )} Radians" )
+	print( f"Arc Tan of {angle_degrees}° === {get_precise( math.degrees , get_precise( math.atan , angle_degrees ) )} ° === {get_precise( math.atan , angle_degrees )} Radians" )
 except Exception as e:
 	pass

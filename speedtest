@@ -1,0 +1,3 @@
+#!/bin/bash
+# https://github.com/sivel/speedtest-cli
+/usr/local/bin/speedtest-cli --secure
