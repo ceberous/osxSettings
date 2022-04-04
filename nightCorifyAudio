@@ -1,0 +1,8 @@
+#!/bin/bash
+# https://github.com/intrlocutr/nightcoreify/blob/ce7a1cc8853f8f7ba9b7f0084b574759770dff14/nightcorei.py#L281
+SAMPLE_RATE=$(ffprobe -hide_banner -loglevel panic -show_format -show_streams -of json $1 | jq '.streams[0].sample_rate' | tr -d '"' )
+if [ -z "$2" ]; then SPEED_FACTOR="1.265"; else SPEED_FACTOR=$2; fi
+FILTER_STRING="asetrate=$SAMPLE_RATE*$SPEED_FACTOR,aresample=$SAMPLE_RATE"
+INPUT_FILE_BASE_NAME=$(basename "$1" | cut -d. -f1 )
+OUTPUT_FILE_PATH="$INPUT_FILE_BASE_NAME - Nightcore.mp3"
+ffmpeg -i "$1" -filter_complex "$FILTER_STRING" "$OUTPUT_FILE_PATH"
