@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+import sys
+import re
+from pprint import pprint
+import img2pdf
+from PIL import Image
+from pathlib import Path
+from PyPDF2 import PdfFileReader
+from pdfrw import PdfReader , PdfWriter
+import json
+from deepdiff import grep , DeepSearch
+from copy import deepcopy
+
+from functools import reduce
+import operator
+
+def write_json( file_path , python_object ):
+	with open( file_path , 'w', encoding='utf-8' ) as f:
+		json.dump( python_object , f , ensure_ascii=False , indent=4 )
+
+def read_json( file_path ):
+	with open( file_path ) as f:
+		return json.load( f )
+
+# needs fixed , no idea what pages[1] means
+# probably some other pdf library
+def deep_search_pdf( pdf ):
+	watermark_results = DeepSearch( pages[1] , "http://www.iceni.com/unlock-pro.htm" , verbose_level=1 )
+	for item , result_string in enumerate( watermark_results['matched_values'] ):
+		print( item )
+
+# so run this as python3 InfixWatermarkRemover.py > output.txt
+# that way you can actually look at it in sublime
+def print_pdf_layout( pdf ):
+	for i in pdf['/Root']['/Pages']['/Kids']:
+		pprint( i )
+		# print( i )
+
+def water_mark_remover_windows_version_6( pdf ):
+	# pdf_clone = deepcopy( pdf )
+	for i in pdf['/Root']['/Pages']['/Kids']:
+		try:
+			try:
+				del i['/Resources']['/XObject']['/XObject0']['/IceniStamp7']
+			except Exception as e:
+				pass
+			try:
+				del i['/Resources']['/XObject']['/XObject0']['/IceniWatermark']
+			except Exception as e:
+				pass
+			try:
+				del i['/MediaBox']
+			except Exception as e:
+				pass
+			try:
+				del i['/IceniStamp7']
+			except Exception as e:
+				pass
+			try:
+				del i['/Annots']
+			except Exception as e:
+				pass
+			try:
+				del i['/Resources']['/XObject']['/XObject0']
+			except Exception as e:
+				pass
+		except Exception as e:
+			pass
+
+
+def try_delete( object_pointer ):
+	try:
+		del object_pointer
+		return True
+	except Exception as e:
+		print( e )
+		return False
+
+# Version 7.6.7
+def water_mark_remover_mac_osx_version_7_single_page( pdf , output_path ):
+	# pdf_clone = deepcopy( pdf )
+	for i in pdf['/Root']['/Pages']['/Kids']:
+		try:
+			if i['/IceniStamp7'] != None:
+				del i['/IceniStamp7']
+		except Exception as e:
+			print( e )
+		try:
+			if i['/ProductStr'] != None:
+				del i['/ProductStr']
+		except Exception as e:
+			print( e )
+		try:
+			if i['/Resources'] != None:
+				if i['/Resources']['/XObject'] != None:
+					del i['/Resources']['/XObject']
+		except Exception as e:
+			print( e )
+		# for x in i['/Resources']['/XObject']:
+
+		# print( i['/IceniStamp7'] )
+		# pprint( i )
+		# print( i['/Resources']['/XObject'] )
+
+	PdfWriter( str( "test-clean.pdf" ) , trailer=pdf ).write()
+
+# def getFromDict( dataDict , mapList ):
+# 	x = dataDict
+# 	for k in mapList:
+# 		x = dataDict[ k ]
+# 	return dataDict
+
+def get_from_dictionary( dictionary , map_list ):
+	return
+
+def write_pdf( pdf , output_path ):
+	PdfWriter( output_path , trailer=pdf ).write()
+
+def water_mark_remover_mac_osx_version_7_test( pdf , output_path ):
+	# print( vars( pdf ) )
+	# for i in pdf['/Root']['/Pages']['/Kids']:
+	# 	try:
+	# 		if i['/IceniStamp7'] != None:
+	# 			del i['/IceniStamp7']
+	# 	except Exception as e:
+	# 		print( e )
+	# 	try:
+	# 		if i['/ProductStr'] != None:
+	# 			del i['/ProductStr']
+	# 	except Exception as e:
+	# 		print( e )
+	# 	try:
+	# 		if i['/Resources'] != None:
+	# 			if i['/Resources']['/XObject'] != None:
+	# 				del i['/Resources']['/XObject']
+	# 	except Exception as e:
+	# 		print( e )
+	# 	# for x in i['/Resources']['/XObject']:
+
+	# 	# print( i['/IceniStamp7'] )
+	# 	# pprint( i )
+	# 	# print( i['/Resources']['/XObject'] )
+
+	# PdfWriter( str( "test-clean.pdf" ) , trailer=pdf ).write()
+
+	# watermark_results = DeepSearch( pdf , "http://www.iceni.com/unlock-pro.htm" , verbose_level=1 )
+	# for index , result in enumerate( watermark_results['matched_values'] ):
+	# 	print( result )
+
+	watermark_results = DeepSearch( pdf , "/IceniWatermark" , verbose_level=1 )
+	if "matched_values" not in watermark_results:
+		return False
+	if "matched_paths" not in watermark_results:
+		return False
+	matched_keys = []
+	for index , result in enumerate( watermark_results[ "matched_paths" ] ):
+		result_keys = result.split( "root" )[ 1 ]
+		result_keys = re.findall( r'\[.*?\]' , result_keys )
+		result_keys = [ x[ 1 : - 1 ] for x in result_keys ]
+		result_keys = [ x[ 1 : - 1 ] if x[ 0 ] == "'" else x for x in result_keys ]
+		result_keys = [ int( x ) if x.isnumeric() else x for x in result_keys ]
+		result_keys = result_keys[ 0 : -2 ]
+		print( result_keys )
+		matched_keys.append( result_keys )
+
+		# x = get_from_dictionary( pdf , result_keys )
+
+		# x = pdf
+		# for k in result_keys:
+		# 	x = x[ k ]
+		# print( x )
+		# try:
+		# 	del x
+		# except Exception as e:
+		# 	print( e )
+
+	for keys in matched_keys:
+		total_keys = len( keys )
+		x = pdf
+		for index , key in enumerate( keys ):
+			x = x[ key ]
+			if index == ( total_keys - 1 ):
+				# print( x )
+				x = None
+				y = get_from_dictionary( pdf , keys )
+				print( y )
+		# PdfWriter( str( f"test-clean-{index+1}.pdf" ) , trailer=pdf ).write()
+		# print( keys )
+		# x = reduce( operator.getitem , keys , pdf )
+		# del x
+		# y = reduce( operator.getitem , keys , pdf )
+	PdfWriter( str( "test-clean.pdf" ) , trailer=pdf ).write()
+	# print_pdf_layout( pdf )
+
+def water_mark_remover_mac_osx_version_7( pdf , output_path ):
+	for i in pdf['/Root']['/Pages']['/Kids']:
+		if str( type( i ) ) == "<class 'pdfrw.objects.pdfdict.PdfDict'>":
+			for index in i['/Kids']:
+				if '/Resources' not in index:
+					continue
+				if '/XObject' not in index['/Resources']:
+					continue
+				for x_object_0 in index['/Resources']['/XObject']:
+					keys = index['/Resources']['/XObject'][ x_object_0 ].keys()
+					if "/IceniWatermark" not in keys:
+						continue
+					del index['/Resources']['/XObject'][ x_object_0 ]
+
+	PdfWriter( str( output_path ) , trailer=pdf ).write()
+
+# http://www.iceni.com/unlock-pro.htm
+if __name__ == "__main__":
+
+	input_path = Path( sys.argv[ 1 ] )
+	output_path = input_path.parent.joinpath( f"{input_path.stem}-No-Infix-Watermark.pdf" )
+	pdf = PdfReader( input_path )
+
+	# print_pdf_layout( pdf )
+	water_mark_remover_mac_osx_version_7( pdf , output_path )
