@@ -1,0 +1,7 @@
+#!/bin/bash
+# https://github.com/jakehilborn/displayplacer
+displayplacer \
+"id:524F5797-12AF-C12D-957B-477A54427B6C \
+res:1920x1080 hz:60 color_depth:4 scaling:off origin:(0,0) degree:0" \
+"id:47B9A3BB-2E37-B277-F212-985E771B5715 res:1920x1080 hz:60 color_depth:4 scaling:off origin:(-1920,0) degree:0" \
+"id:4B7403ED-EC04-EE07-BE9C-983255EFB24A res:1920x1080 hz:60 color_depth:4 scaling:off origin:(1920,0) degree:0"
