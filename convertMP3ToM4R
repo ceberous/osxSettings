@@ -1,0 +1,11 @@
+#!/bin/bash
+
+dirname=$(dirname "$1")
+basename=$(basename "$1")
+filename=$(echo "$basename" | cut -d '.' -f 1)
+
+M4A_Name=$(echo $dirname/$filename.m4a)
+M4R_Name=$(echo $dirname/$filename.m4r)
+
+ffmpeg -i "$1" "$M4A_Name"
+mv "$M4A_Name" "$M4R_Name"
