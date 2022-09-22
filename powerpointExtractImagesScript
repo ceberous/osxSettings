@@ -1,0 +1,24 @@
+import sys
+import pptx
+
+powerpoint = pptx.Presentation( sys.argv[1] )
+print( powerpoint )
+total_images = 1
+for slide_index , slide in enumerate( powerpoint.slides ):
+	print( f"Processing Slide [{slide_index+1}] of {len(powerpoint.slides)}" )
+	total_slide_images = 1
+	for shape_index , shape in enumerate( slide.shapes ):
+		print( f"\tProcessing Shape [{shape_index+1}] of {len(slide.shapes)}" )
+		print( f"\t\tShape Type === {shape.shape_type}" )
+		if hasattr( shape , "image" ):
+			#print( shape.image.content_type )
+			image = shape.image
+			image_bytes = image.blob
+			if total_slide_images > 1:
+				image_filename = f"{str(total_images).zfill(3)}-slide-{(slide_index+1)}-{total_slide_images}.jpeg"
+			else:
+				image_filename = f"{str(total_images).zfill(3)}-slide-{(slide_index+1)}.jpeg"	
+			total_slide_images += 1
+			total_images += 1
+			with open( image_filename , "wb" ) as f:
+				f.write( image_bytes )

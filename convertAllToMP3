@@ -1,0 +1,20 @@
+#!/bin/bash
+for file in *
+do
+	extension=$(echo "$file" | sed 's/^.*\.//')
+	if [[ "$extension" = "mp4" ]]; then
+		dirname=$(dirname "$file")
+		basename=$(basename "$file" | cut -d. -f1)
+		outputpath_wav=$(echo "$dirname"/"$basename".wav)
+		outputpath=$(echo "$dirname"/"$basename".mp3)
+		echo "$file"
+		echo "$outputpath_wav"
+		echo "$outputpath"
+		if test -f "$outputpath"; then
+			continue
+		fi
+		ffmpeg -i "$file" -vn -acodec pcm_s16le -ar 44100 -ac 2 "$outputpath_wav"
+		ffmpeg -i "$outputpath_wav" -b:a 320k "$outputpath"
+		rm "$outputpath_wav" || echo ""
+	fi
+done
