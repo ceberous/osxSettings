@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+import os
+import sys
+import re
+import time
+import json
+from pathlib import Path
+import subprocess
+import requests
+#import pyperclip
+
+def read_json( file_path ):
+	with open( file_path ) as f:
+		return json.load( f )
+
+def write_json( file_path , python_object ):
+	with open( file_path , 'w', encoding='utf-8' ) as f:
+		json.dump( python_object , f , ensure_ascii=False , indent=4 )
+
+def write_text( file_path , text_lines_list ):
+	#with open( file_path , 'a', encoding='utf-8' ) as f:
+	with open( file_path , 'w', encoding='utf-8' ) as f:
+		f.writelines( text_lines_list )
+
+def read_text( file_path ):
+	with open( file_path ) as f:
+		return f.read().splitlines()
+
+def run_bash_command( options ):
+	try:
+		result = subprocess.run( options , cwd=os.getcwd() , shell=False , capture_output=True , universal_newlines=True )
+		if result.returncode != 0:
+			return result.stderr
+		else:
+			print( result.stdout )
+			return result.stdout
+	except Exception as e:
+		print( e )
+		return False
+
+def upload_file_path( photo_server_credentials , file_path ):
+	try:
+		with open( file_path , "rb" ) as upload_file:
+			file_list = { "file": upload_file }
+			headers = { "key": photo_server_credentials[ "key" ] }
+			response = requests.post( photo_server_credentials[ "endpoint_url" ] , headers=headers , files=file_list )
+			response.raise_for_status()
+			uploaded_url = response.text.strip()
+			#pyperclip.copy( f"<center><img style=\"zoom:50%;\" src=\"{uploaded_url}\"/></center>" )
+			return uploaded_url
+	except Exception as e:
+		print( e )
+		return False
+
+def upload_image_url( photo_server_credentials , image_url ):
+	try:
+		headers = {
+			'key': photo_server_credentials["key"] ,
+			'url': image_url
+		}
+		response = requests.post( photo_server_credentials[ "endpoint_remote_url" ] , headers=headers )
+		response.raise_for_status()
+		# pyperclip.copy( f"![]({response.text})" )
+		return response.text
+	except Exception as e:
+		print( e )
+		return False
+
+def find_upload_and_replace_image_urls( photo_server_credentials , md_lines ):
+	cleaned_lines = []
+	# https://stackoverflow.com/a/62196072
+	image_url_re = r'(?:http\:|https\:)?\/\/.*?\.(?:png|jpg|jpeg|gif|svg)'
+	for line_index , line in enumerate( md_lines ):
+		result = line
+		matches = [ match for match in re.finditer( image_url_re , line ) ]
+		for index , match in enumerate( matches ):
+			match_text = match.group( 0 )
+			start_index = match.start( 0 )
+			end_index = match.end( 0 )
+			original_url = line[ start_index : end_index ]
+			if photo_server_credentials[ "base_url" ] in original_url:
+				continue
+			new_uploaded_url = upload_image_url( photo_server_credentials , original_url )
+			if new_uploaded_url == False:
+				continue
+			print( new_uploaded_url , original_url )
+			result = result.replace( original_url , new_uploaded_url )
+			time.sleep( 0.3 )
+		cleaned_lines.append( result + "\n" )
+	return cleaned_lines
+
+if __name__ == "__main__":
+	photo_server_credentials = read_json( "/Users/morpheous/Tresors/Misc/Personal/image_upload_server_user.json" )
+	input_file_path = Path( sys.argv[ 1 ] )
+	input_file_md_lines = read_text( str( input_file_path ) )
+	cleaned_md_lines = find_upload_and_replace_image_urls( photo_server_credentials , input_file_md_lines )
+	# output_file_path = input_file_path.parent.joinpath( f"{input_file_path.stem}-Uploaded.md" )
+	write_text( str( input_file_path ) , cleaned_md_lines )
