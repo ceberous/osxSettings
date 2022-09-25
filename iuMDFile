@@ -66,6 +66,27 @@ def upload_image_url( photo_server_credentials , image_url ):
 		print( e )
 		return False
 
+def find_upload_and_replace_image_local_paths( photo_server_credentials , md_lines ):
+	cleaned_lines = []
+	# https://stackoverflow.com/a/62196072
+	local_path_re = r'(\/.*?\.[\w:]+)'
+	for line_index , line in enumerate( md_lines ):
+		result = line
+		matches = [ match for match in re.finditer( local_path_re , line ) ]
+		for index , match in enumerate( matches ):
+			match_text = match.group( 0 )
+			start_index = match.start( 0 )
+			end_index = match.end( 0 )
+			local_file_path = line[ start_index : end_index ]
+			new_uploaded_url = upload_file_path( photo_server_credentials , local_file_path )
+			if new_uploaded_url == False:
+				continue
+			print( new_uploaded_url , local_file_path )
+			result = result.replace( local_file_path , new_uploaded_url )
+			time.sleep( 0.3 )
+		cleaned_lines.append( result + "\n" )
+	return cleaned_lines
+
 def find_upload_and_replace_image_urls( photo_server_credentials , md_lines ):
 	cleaned_lines = []
 	# https://stackoverflow.com/a/62196072
@@ -93,6 +114,7 @@ if __name__ == "__main__":
 	photo_server_credentials = read_json( "/Users/morpheous/Tresors/Misc/Personal/image_upload_server_user.json" )
 	input_file_path = Path( sys.argv[ 1 ] )
 	input_file_md_lines = read_text( str( input_file_path ) )
-	cleaned_md_lines = find_upload_and_replace_image_urls( photo_server_credentials , input_file_md_lines )
+	output_md_lines = find_upload_and_replace_image_local_paths( photo_server_credentials , input_file_md_lines )
+	output_md_lines = find_upload_and_replace_image_urls( photo_server_credentials , output_md_lines )
 	# output_file_path = input_file_path.parent.joinpath( f"{input_file_path.stem}-Uploaded.md" )
-	write_text( str( input_file_path ) , cleaned_md_lines )
+	write_text( str( input_file_path ) , output_md_lines )
