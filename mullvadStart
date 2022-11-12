@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo /Applications/Mullvad\ VPN.app/Contents/Resources/mullvad-daemon -v &
+open -a "Mullvad VPN"

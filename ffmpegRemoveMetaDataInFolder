@@ -1,0 +1,15 @@
+#!/bin/bash
+# https://superuser.com/questions/441361/strip-metadata-from-all-formats-with-ffmpeg
+
+for f in ./*mp3; do
+    echo "$f"
+	dirname=$(dirname "$f")
+	basename=$(basename "$f")
+	outputpath=$(echo "$dirname"/"2-$basename")
+	ffmpeg -i "$f" -map_metadata -1 -c:v copy -c:a copy "$outputpath"
+	rm "$f"
+	mv "$outputpath" "$f"
+done
+
+
+

@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo pkill -SIGHUP mullvad-daemon
+sudo pkill -SIGHUP -f "/Applications/Mullvad VPN.app"
