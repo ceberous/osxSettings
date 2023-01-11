@@ -1,0 +1,2 @@
+#!/bin/bash
+shuf -i 1025-65535 -n 1 | awk '{if (system("netstat -an | grep -wq \""$1"\"") == 1) {print $1}}'
