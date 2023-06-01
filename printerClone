@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Get printer options
+printer_options=$(lpoptions -p "$1")
+
+# Loop over options and add them to the new printer
+IFS=', ' read -r -a array <<< "$printer_options"
+for element in "${array[@]}"
+do
+    option=$(echo $element | cut -d'=' -f1)
+    value=$(echo $element | cut -d'=' -f2)
+
+    # Apply each option to the new printer
+    lpadmin -p "$2" -o $option=$value
+done
+
+# Don't forget to enable the printer
+lpadmin -p "$2" -E

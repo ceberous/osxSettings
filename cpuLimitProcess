@@ -3,5 +3,5 @@
 while true
 do
 	pid=$(pidof "$1" | awk '{print $1}')
-	cpulimit -l "$1" -p $pid
+	cpulimit -l "$2" -p $pid
 done
