@@ -8,7 +8,15 @@ fi
 TEMP_MIN=1000
 TEMP_MAX=6500
 TEMP_RANGE=$((TEMP_MAX - TEMP_MIN))
-TEMP=$((TEMP_MIN + ($1 * TEMP_RANGE) / 100))
+
+# Check for third argument
+if [ -z "$3" ]; then
+  PERCENT=$(echo "50 + ($1/2)" | bc)
+else
+  PERCENT=$1
+fi
+
+TEMP=$((TEMP_MIN + ((100 - PERCENT) * TEMP_RANGE) / 100))
 
 # Validate and calculate brightness
 if [ -z "$2" ] || [ "$2" -lt 0 ] || [ "$2" -gt 100 ]; then
