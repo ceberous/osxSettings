@@ -1,2 +1,22 @@
 #!/bin/bash
-redshift -O 1000K &
+
+# Validate and calculate color temperature
+if [ -z "$1" ] || [ "$1" -lt 0 ] || [ "$1" -gt 100 ]; then
+  echo "Please provide a color temperature percentage between 0 and 100."
+  exit 1
+fi
+TEMP_MIN=1000
+TEMP_MAX=6500
+TEMP_RANGE=$((TEMP_MAX - TEMP_MIN))
+TEMP=$((TEMP_MIN + ($1 * TEMP_RANGE) / 100))
+
+# Validate and calculate brightness
+if [ -z "$2" ] || [ "$2" -lt 0 ] || [ "$2" -gt 100 ]; then
+  BRIGHTNESS=1
+else
+  BRIGHTNESS=$(echo "scale=2; $2/100" | bc)
+fi
+
+# Run redshift
+sudo pkill -9 redshift
+redshift -O ${TEMP}K -b ${BRIGHTNESS} &
