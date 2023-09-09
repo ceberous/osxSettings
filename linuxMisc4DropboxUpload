@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Define the IP address, username, and path to the SSH key file
+IP_ADDRESS="192.168.4.144"
+USERNAME="morphs"
+SSH_KEY_FILE="/Users/morpheous/Library/CloudStorage/Dropbox/Misc/SSH2/KEYS/linuxmisc4"
+PUBLIC_URL="https://dropbox.34353.org"
+BASE_DESTINATION_PATH="/home/morphs/DOCKER_IMAGES/TEMP_AFS_IPS/FILES"
+
+# Check if at least one argument is provided
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <source> [destination]"
+    exit 1
+fi
+
+# Define the source directory/file
+SOURCE="$1"
+DESTINATION_FILE="$(basename "$SOURCE")"
+
+# If SOURCE is a directory, we want to append the directory name to the DESTINATION_PATH only if arg2 is not provided
+if [ -d "$SOURCE" ]; then
+    if [ -z "$2" ]; then
+        DESTINATION_PATH="$DESTINATION_FILE"
+        SOURCE="$SOURCE/"  # Add trailing slash to source
+    else
+        DESTINATION_PATH="${2}"
+    fi
+else
+    DESTINATION_PATH="${2:-}"
+fi
+
+FINAL_DESTINATION_PATH="$BASE_DESTINATION_PATH/$DESTINATION_PATH"
+DESTINATION="$USERNAME@$IP_ADDRESS:$FINAL_DESTINATION_PATH"
+
+# Define the custom SSH command
+SSH_COMMAND="ssh -o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o LogLevel=ERROR -F /dev/null -i $SSH_KEY_FILE"
+
+# Create the necessary directories on the remote host
+$SSH_COMMAND $USERNAME@$IP_ADDRESS "mkdir -p $FINAL_DESTINATION_PATH"
+
+# Use rsync to copy the files
+rsync -avz -e "$SSH_COMMAND" "$SOURCE" "$DESTINATION"
+
+# Check if the source is a directory, and if so, set permissions accordingly
+if [ -d "$SOURCE" ]; then
+    $SSH_COMMAND $USERNAME@$IP_ADDRESS "echo 'Options +Indexes' > \"$FINAL_DESTINATION_PATH/.htaccess\" && find \"$FINAL_DESTINATION_PATH\" -type d -exec chmod 555 {} \; && chmod 444 \"$FINAL_DESTINATION_PATH/.htaccess\" && find \"$FINAL_DESTINATION_PATH\" -type f -exec chmod 444 {} \;"
+else
+    $SSH_COMMAND $USERNAME@$IP_ADDRESS "chmod 444 \"$FINAL_DESTINATION_PATH/$DESTINATION_FILE\""
+fi
+
+urlencode() {
+    local string="${1}"
+    string="${string#/}"
+    string=$(printf '%s' "$string" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-)
+    echo "$string"
+}
+
+# Print the URL
+if [ -d "$SOURCE" ]; then
+    url_encoded=$(urlencode "$DESTINATION_PATH")
+else
+    url_encoded=$(urlencode "$DESTINATION_PATH/$DESTINATION_FILE")
+fi
+
+echo "File URL: $PUBLIC_URL/$url_encoded"

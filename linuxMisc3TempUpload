@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Define the IP address, username, and path to the SSH key file
+IP_ADDRESS="192.168.4.86"
+USERNAME="morphs"
+SSH_KEY_FILE="/Users/morpheous/Library/CloudStorage/Dropbox/Misc/SSH2/KEYS/linuxmisc3-raspi"
+PUBLIC_URL="https://9304d5ed.34353.org"
+
+# Check if at least one argument is provided
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <source> [destination]"
+    exit 1
+fi
+
+# Define the source directory/file and the destination (in the format user@host:/path)
+SOURCE="$1"
+DESTINATION_PATH="${2:-/home/morphs/DOCKER_IMAGES/AFS_IPS/FILES}"
+
+# Generate UUID and get extension of the file or directory
+UUID=$(uuidgen)
+uuid=$(echo "$UUID" | tr '[:upper:]' '[:lower:]')
+EXTENSION=""
+
+# Check if the SOURCE is a file, then get the extension
+if [ -f "$SOURCE" ]; then
+    EXTENSION=".${SOURCE##*.}"
+fi
+
+# Construct the new destination file/directory name with UUID and the extension (if exists)
+DESTINATION_FILE="$uuid$EXTENSION"
+DESTINATION="$USERNAME@$IP_ADDRESS:$DESTINATION_PATH/$DESTINATION_FILE"
+
+# Define the custom SSH command
+SSH_COMMAND="ssh -o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o LogLevel=ERROR -F /dev/null -i $SSH_KEY_FILE"
+
+# Use rsync to copy the files
+rsync -avz -e "$SSH_COMMAND" "$SOURCE" "$DESTINATION"
+
+# Set the files to read-only
+$SSH_COMMAND $USERNAME@$IP_ADDRESS "chmod 444 \"$DESTINATION_PATH/$DESTINATION_FILE\""
+
+echo "File URL: $PUBLIC_URL/$DESTINATION_FILE"
+
+# sudo apt-get install at
+# sudo systemctl start atd
