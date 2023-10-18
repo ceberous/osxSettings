@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Check for the correct number of arguments
+if [ "$#" -ne 2 ]; then
+    echo "Usage: ./encrypt_pdf.sh [password] [input_pdf_file_path]"
+    exit 1
+fi
+
+# Extract arguments
+PASSWORD=$1
+INPUT_PDF_PATH=$2
+
+# Extract the directory and filename from the input PDF path
+INPUT_DIR=$(dirname "$INPUT_PDF_PATH")
+INPUT_FILENAME=$(basename "$INPUT_PDF_PATH")
+
+# Generate the output PDF path by appending "- Encrypted" to the input filename
+OUTPUT_FILENAME="${INPUT_FILENAME%.pdf} - Encrypted.pdf"
+OUTPUT_PDF_PATH="$INPUT_DIR/$OUTPUT_FILENAME"
+
+# Run the qpdf command
+qpdf --encrypt "$PASSWORD" "$PASSWORD" 256 -- "$INPUT_PDF_PATH" "$OUTPUT_PDF_PATH"
+
+# Check if qpdf succeeded
+if [ $? -eq 0 ]; then
+    echo "Successfully encrypted $INPUT_PDF_PATH to $OUTPUT_PDF_PATH."
+else
+    echo "Encryption failed."
+fi
+
