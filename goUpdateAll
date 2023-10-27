@@ -1,0 +1,43 @@
+#!/bin/bash
+set +e
+
+# Your GitHub personal access token
+# https://github.com/settings/tokens?type=beta
+# https://github.com/settings/tokens
+# just needs public read access
+TOKEN="YOUR_PERSONAL_ACCESS_TOKEN"
+
+# Read the go.mod file and filter lines that contain "github.com"
+github_lines=$(awk '/require [(]/ {flag=1; next} /)/ {flag=0} flag {print}' go.mod | grep "github.com")
+
+# Loop through each line and extract the GitHub repo and version
+while read -r line; do
+  # Extract the GitHub repo and version
+  repo_with_github=$(echo "$line" | awk '{print $1}')
+  repo=${repo_with_github#github.com/}  # Remove 'github.com/' prefix
+
+  # Remove anything past the second "/"
+  repo=$(echo "$repo" | awk -F'/' '{print $1"/"$2}')
+
+  # Fetch the latest commit hash using GitHub API
+  response=$(curl -s -w "\n%{http_code}" -H "Authorization: token $TOKEN" "https://api.github.com/repos/$repo/commits")
+
+  # Separate the HTTP status code from the JSON response
+  http_code=$(echo "$response" | tail -n1)
+  json_response=$(echo "$response" | sed '$ d')
+
+  # Parse the JSON response to get the commit hash
+  commit_hash=$(echo "$json_response" | jq -r '.[0].sha // empty')
+
+  # Check HTTP status code and commit_hash
+  if [[ "$http_code" -ne 200 || -z "$commit_hash" || "$commit_hash" == "null" || "$commit_hash" == "empty" ]]; then
+    echo "Failed to fetch the latest commit hash for $repo (HTTP $http_code)"
+    continue
+  fi
+
+  echo "$repo === $commit_hash"
+
+  # Update the package to the latest commit
+  go get "$repo_with_github@$commit_hash"
+
+done <<< "$github_lines"
