@@ -1,0 +1,25 @@
+#!/bin/bash
+open -a "/Applications/World of Warcraft/_classic_era_/World of Warcraft Classic.app"
+sleep 4
+username="asdf"
+password="fdsa"
+
+osascript -e "
+tell application \"World of Warcraft Classic\" to activate
+on x_type(x_text, delay_time)
+    repeat with x_char in x_text
+        tell application \"System Events\" to keystroke x_char
+        delay delay_time
+    end repeat
+end x_type
+x_type(\"$username\", 0.01)
+tell application \"System Events\" to keystroke tab
+x_type(\"$password\", 0.01)
+tell application \"System Events\" to keystroke return
+delay 4
+tell application \"System Events\" to key code 125
+delay 0.5
+tell application \"System Events\" to keystroke return
+delay 6
+tell application \"System Events\" to keystroke return
+"
