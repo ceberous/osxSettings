@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# This function converts symbolic permissions to octal
+symbolic_to_octal() {
+    sym_perms="$1"
+    let sum=0
+
+    # Check each permission bit
+    [[ ${sym_perms:0:1} == 'r' ]] && let sum+=4
+    [[ ${sym_perms:1:1} == 'w' ]] && let sum+=2
+    [[ ${sym_perms:2:1} == 'x' ]] && let sum+=1
+
+    echo $sum
+}
+
+# Main script starts here
+
+# Check if correct number of arguments are passed
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <file_path> <permissions>"
+    exit 1
+fi
+
+FILE_PATH=$1
+PERMISSION_STRING=$2
+
+# Remove the first character in case it is 'd', 'l', etc.
+perm_string=${PERMISSION_STRING:1}
+
+# Split permissions into user, group, and others
+user_perms=${perm_string:0:3}
+group_perms=${perm_string:3:3}
+others_perms=${perm_string:6:3}
+
+# Convert each set of permissions to octal
+user_octal=$(symbolic_to_octal $user_perms)
+group_octal=$(symbolic_to_octal $group_perms)
+others_octal=$(symbolic_to_octal $others_perms)
+
+# Combine for final octal permissions
+octal_permissions="${user_octal}${group_octal}${others_octal}"
+
+# Apply permissions to the file
+chmod $octal_permissions $FILE_PATH
+
+echo "Permissions for $FILE_PATH have been set to $octal_permissions"
+
