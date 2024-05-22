@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# arabic
+/Applications/IINA.app/Contents/MacOS/iina-cli "https://live-hls-web-aja-fa.getaj.net/AJA/index.m3u8"
+
+# english
+/Applications/IINA.app/Contents/MacOS/iina-cli "https://live-hls-web-aje-fa.getaj.net/AJE/index.m3u8"

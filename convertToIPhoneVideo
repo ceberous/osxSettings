@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Function to process a single video file
+process_video() {
+  local file="$1"
+  if [ -f "$file" ]; then
+    # Extract width and height using ffprobe, which is more reliable
+    dimensions=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$file")
+    width=$(echo $dimensions | cut -d'x' -f1)
+    height=$(echo $dimensions | cut -d'x' -f2)
+    
+    echo "Processing $file with dimensions: ${width}x${height}"
+
+    # Check if width and height are not divisible by 2
+    if [ $((width % 2)) -ne 0 ] || [ $((height % 2)) -ne 0 ]; then
+      echo "Scaling $file to make dimensions even."
+      # Scale the video
+      ffmpeg -i "$file" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -c:a aac -b:a 320k -movflags +faststart "${file%.*}_iphone.mp4"
+    else
+      echo "Re-encoding $file without scaling."
+      # No scaling needed, re-encode to ensure compatibility
+      ffmpeg -i "$file" -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -c:a aac -b:a 320k -movflags +faststart "${file%.*}_iphone.mp4"
+    fi
+
+    if [ $? -eq 0 ]; then
+      echo "Successfully processed $file"
+    else
+      echo "Failed to process $file"
+    fi
+  else
+    echo "File $file does not exist."
+  fi
+}
+
+# Check if the argument is a file or directory
+if [ -f "$1" ]; then
+  # Single file
+  process_video "$1"
+elif [ -d "$1" ]; then
+  # Directory
+  cd "$1" || { echo "Failed to change directory to $1"; exit 1; }
+  for file in *.mp4 *.mov *.avi *.mkv; do
+    [ -e "$file" ] && process_video "$file"
+  done
+else
+  echo "Error: Argument is not a valid file or directory."
+  exit 1
+fi
+
