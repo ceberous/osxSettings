@@ -1,0 +1,3 @@
+#!/bin/bash
+/Applications/Zotero.app/Contents/MacOS/zotero -P
+
