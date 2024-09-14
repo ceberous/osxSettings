@@ -3,4 +3,5 @@ sudo pmset -b sleep 1
 sudo pmset -b disablesleep 0
 # osascript -e 'tell app "System Events" to sleep'
 # pmset displaysleepnow
+sudo pmset -a hibernatemode 25
 sudo pmset sleepnow
