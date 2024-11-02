@@ -1,0 +1,5 @@
+#!/bin/bash
+diskutil list
+#destination="/Volumes/63614TB/COMBINED_BACKUP/Seagate/14SEP2024.img"
+destination=$1
+sudo dd if=/dev/disk2 of="$destination" bs=512 status=progress

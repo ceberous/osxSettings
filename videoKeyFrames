@@ -1,4 +1,90 @@
-#!/bin/bash
-#https://stackoverflow.com/a/12100266
-WidthHeight=$(ffprobe -v error -show_entries stream=width,height -of csv=p=0:s=x "$1")
-ffmpeg -i "$1" -vsync 0 -vf select="eq(pict_type\,PICT_TYPE_I)" -s "$WidthHeight" -f image2 %03d.jpeg
+#!/usr/bin/env python3
+import os
+import cv2
+import ffmpeg
+import numpy as np
+from tqdm import tqdm
+from skimage.metrics import structural_similarity as ssim
+
+FRAME_INTERVAL = 0.7  # Interval in seconds for extracting frames (can be a float)
+SIMILARITY_THRESHOLD = 0.9  # Threshold for SSIM comparison
+
+def extract_frames(video_path, output_dir):
+    """Extract frames from a video at regular intervals."""
+    if os.path.exists(output_dir):
+        print(f"Frames already extracted in {output_dir}. Skipping extraction.")
+        return
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Let ffmpeg handle the progress with its own status messages
+    (
+        ffmpeg
+        .input(video_path)
+        .filter('fps', fps=1/FRAME_INTERVAL)
+        .output(os.path.join(output_dir, 'frame_%04d.jpeg'))
+        .run()
+    )
+
+def compare_ssim(img1, img2, threshold=SIMILARITY_THRESHOLD):
+    """Compare two images using Structural Similarity Index (SSIM)."""
+    gray_img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    gray_img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+    # Calculate SSIM between the two images
+    score, _ = ssim(gray_img1, gray_img2, full=True)
+
+    # Return True if similarity is below the threshold (meaning a significant difference)
+    return score < threshold
+
+def filter_frames(frames_dir, output_dir, similarity_threshold=SIMILARITY_THRESHOLD):
+    """Filter out similar frames based on SSIM comparison."""
+    os.makedirs(output_dir, exist_ok=True)
+    frames = sorted([f for f in os.listdir(frames_dir) if f.endswith(".jpeg")])
+    prev_frame = None
+
+    # Use tqdm to show the filtering progress
+    for frame in tqdm(frames, desc="Filtering Frames", unit="frame"):
+        frame_path = os.path.join(frames_dir, frame)
+        current_frame = cv2.imread(frame_path)
+
+        if prev_frame is None:
+            # Save the first frame
+            cv2.imwrite(os.path.join(output_dir, frame), current_frame)
+            prev_frame = current_frame
+        else:
+            # Compare the current frame with the previous frame using SSIM
+            if compare_ssim(prev_frame, current_frame, threshold=similarity_threshold):
+                cv2.imwrite(os.path.join(output_dir, frame), current_frame)
+                prev_frame = current_frame
+
+def process_video(video_path):
+    """Main function to process video and extract keyframes."""
+    # Extract the directory and filename from the input path
+    base_dir = os.path.dirname(video_path)
+    video_name = os.path.basename(video_path)
+    video_name_no_ext = os.path.splitext(video_name)[0]
+    
+    # Create paths for temporary and output directories
+    temp_frames_dir = os.path.join(base_dir, f"{video_name_no_ext}_temp_frames")
+    output_frames_dir = os.path.join(base_dir, f"{video_name_no_ext}_filtered_frames")
+
+    # Step 1: Extract frames from the video at intervals (only if needed)
+    print("Extracting frames...")
+    extract_frames(video_path, temp_frames_dir)
+
+    # Step 2: Filter the extracted frames to keep only significant changes
+    print("Filtering frames...")
+    filter_frames(temp_frames_dir, output_frames_dir)
+
+    print("Filtered frames saved in:", output_frames_dir)
+
+# Example usage
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <path_to_video>")
+        sys.exit(1)
+
+    video_path = sys.argv[1]
+    process_video(video_path)
