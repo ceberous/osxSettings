@@ -1,0 +1,3 @@
+#!/bin/bash
+
+wget --no-clobber --random-wait -r -p -E -c -e robots=off -U mozilla $1

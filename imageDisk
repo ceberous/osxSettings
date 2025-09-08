@@ -2,4 +2,19 @@
 diskutil list
 #destination="/Volumes/63614TB/COMBINED_BACKUP/Seagate/14SEP2024.img"
 destination=$1
-sudo dd if=/dev/disk2 of="$destination" bs=512 status=progress
+
+sudo kill -9 $(ps -ax | grep '[d]d' | awk '{print $1}')
+
+#sudo disutil unmount /dev/disk2
+diskutil unmountDisk /dev/disk2
+
+sudo ddrescue --sparse /dev/disk2 /Volumes/win11/COMBINED_BACKUP/disk2.img /Volumes/win11/COMBINED_BACKUP/disk2.map
+
+#sudo dd if=/dev/disk2 of="$destination" bs=512 status=progress
+#sudo dd if=/dev/disk2 bs=4M conv=noerror,sync status=progress | gzip > /Volumes/63614TB/COMBINED_BACKUP/Seagate/14SEP2024.img.gz
+#sudo dd if=/dev/disk2 of=/Volumes/63614TB/COMBINED_BACKUP/Seagate/14SEP2024.img bs=4M conv=noerror,sync status=progress
+
+#sudo dd if=/dev/disk2s2 bs=512 iflag=fullblock conv=noerror,sync status=progress of="/Volumes/14TB/LM3/lm3-d2.img"
+#sudo ddrescue --force --retry-passes=3 --sparse /dev/disk2s2 /Volumes/14TB/LM3/lm3-d2.img /Volumes/14TB/LM3/lm3-d2.map
+#sudo dd if=/dev/disk3s2 bs=4M conv=noerror,sync,sparse status=progress of="/Volumes/14TB/LM3/lm3-d2.img"
+#sudo dd if=/dev/disk2 bs=4M conv=noerror,sync status=progress | gzip > /Volumes/14TB/LM3/lm3.img.gz
