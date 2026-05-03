@@ -42,6 +42,6 @@ git add .
 git commit -m "$NextCommitNumber"
 
 git remote get-url origin >/dev/null 2>&1 || \
-	git remote add origin git@github.com:ceberous/osxSettings.git
+	git remote add origin git@github-ceberous:ceberous/osxSettings.git
 
 git push origin master
