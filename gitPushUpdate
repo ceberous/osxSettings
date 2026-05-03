@@ -4,8 +4,8 @@ ssh-add -D
 git init
 git config --global --unset user.name
 git config --global --unset user.email
-git config user.name "ceberous"
-git config user.email "cerbus.collin@gmail.com"
+git config --global user.name "ceberous"
+git config --global user.email "cerbus.collin@gmail.com"
 ssh-add -k /Users/morpheous/.ssh/githubceb
 LastCommit=$(git rev-list HEAD --count)
 if $(is_int "${LastCommit}"); then
