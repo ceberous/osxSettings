@@ -3,36 +3,36 @@ set -e
 
 is_int() { [[ "$1" =~ ^[0-9]+$ ]]; }
 
-# 🧨 Kill any existing agent completely
-pkill ssh-agent >/dev/null 2>&1 || true
-
-# 🔐 Start a brand new clean agent
+# 🔐 Start a clean agent and CAPTURE its socket
 eval "$(ssh-agent -s)" >/dev/null
 
-# ➕ Add ONLY your key
+# 🧹 Clear anything in THIS agent
+ssh-add -D >/dev/null 2>&1 || true
+
+# ➕ Add your key to THIS agent
 ssh-add /Users/morpheous/.ssh/githubceb
 
-# (optional sanity check)
+# 🚨 FORCE git/ssh to use THIS agent
+export SSH_AUTH_SOCK
+
+# Debug (optional, leave for now)
 ssh-add -l
+ssh -T git@github.com || true
 
 # Init only if needed
 [ -d .git ] || git init
 
-# Local identity
 git config user.name "ceberous"
 git config user.email "cerbus.collin@gmail.com"
 
-# Commit count
 LastCommit=$(git rev-list --count HEAD 2>/dev/null || echo 0)
 
 if is_int "$LastCommit"; then
 	NextCommitNumber=$((LastCommit+1))
 else
-	echo "Not an integer Resetting"
 	NextCommitNumber=1
 fi
 
-# Skip if no changes
 if [ -z "$(git status --porcelain)" ]; then
 	echo "Nothing to commit"
 	exit 0
@@ -41,9 +41,7 @@ fi
 git add .
 git commit -m "$NextCommitNumber"
 
-# Add remote if missing
 git remote get-url origin >/dev/null 2>&1 || \
 	git remote add origin git@github.com:ceberous/osxSettings.git
 
-# Push
 git push origin master
