@@ -3,23 +3,14 @@ set -e
 
 is_int() { [[ "$1" =~ ^[0-9]+$ ]]; }
 
-# 🔐 Start a clean agent and CAPTURE its socket
+# 🔐 Clean agent (fine to keep)
 eval "$(ssh-agent -s)" >/dev/null
-
-# 🧹 Clear anything in THIS agent
 ssh-add -D >/dev/null 2>&1 || true
-
-# ➕ Add your key to THIS agent
 ssh-add /Users/morpheous/.ssh/githubceb
 
-# 🚨 FORCE git/ssh to use THIS agent
-export SSH_AUTH_SOCK
+# ✅ IMPORTANT: test the CORRECT host
+ssh -T git@github-ceberous || true
 
-# Debug (optional, leave for now)
-ssh-add -l
-ssh -T git@github.com || true
-
-# Init only if needed
 [ -d .git ] || git init
 
 git config user.name "ceberous"
@@ -41,7 +32,8 @@ fi
 git add .
 git commit -m "$NextCommitNumber"
 
-git remote get-url origin >/dev/null 2>&1 || \
-	git remote add origin git@github-ceberous:ceberous/osxSettings.git
+# ✅ FORCE correct remote (overwrite if wrong)
+git remote set-url origin git@github-ceberous:ceberous/osxSettings.git
 
+# 🚀 Push
 git push origin master
