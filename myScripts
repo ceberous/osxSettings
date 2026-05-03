@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DEST="/Users/morpheous/WORKSPACE/MISC/USR_LOCAL_BIN"
+
+find /usr/local/bin -type f -perm -111 -size -50k \
+  -exec file {} \; \
+  | grep -i text \
+  | cut -d: -f1 \
+  | xargs -I{} rsync -au "{}" "$DEST/"

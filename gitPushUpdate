@@ -1,20 +1,49 @@
 #!/bin/bash
-function is_int() { return $(test "$@" -eq "$@" > /dev/null 2>&1); }
-ssh-add -D
-git init
-git config --global --unset user.name
-git config --global --unset user.email
-git config --global user.name "ceberous"
-git config --global user.email "cerbus.collin@gmail.com"
-ssh-add -k /Users/morpheous/.ssh/githubceb
-LastCommit=$(git rev-list HEAD --count)
-if $(is_int "${LastCommit}"); then
+set -e
+
+is_int() { [[ "$1" =~ ^[0-9]+$ ]]; }
+
+# 🧨 Kill any existing agent completely
+pkill ssh-agent >/dev/null 2>&1 || true
+
+# 🔐 Start a brand new clean agent
+eval "$(ssh-agent -s)" >/dev/null
+
+# ➕ Add ONLY your key
+ssh-add /Users/morpheous/.ssh/githubceb
+
+# (optional sanity check)
+ssh-add -l
+
+# Init only if needed
+[ -d .git ] || git init
+
+# Local identity
+git config user.name "ceberous"
+git config user.email "cerbus.collin@gmail.com"
+
+# Commit count
+LastCommit=$(git rev-list --count HEAD 2>/dev/null || echo 0)
+
+if is_int "$LastCommit"; then
 	NextCommitNumber=$((LastCommit+1))
 else
 	echo "Not an integer Resetting"
 	NextCommitNumber=1
 fi
+
+# Skip if no changes
+if [ -z "$(git status --porcelain)" ]; then
+	echo "Nothing to commit"
+	exit 0
+fi
+
 git add .
 git commit -m "$NextCommitNumber"
-git remote add origin git@github.com:ceberous/osxSettings.git || echo ""
+
+# Add remote if missing
+git remote get-url origin >/dev/null 2>&1 || \
+	git remote add origin git@github.com:ceberous/osxSettings.git
+
+# Push
 git push origin master
