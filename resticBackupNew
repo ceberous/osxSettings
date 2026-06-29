@@ -1,0 +1,10 @@
+#!/bin/bash
+#restic -r /Volumes/63614TB/COMBINED_BACKUP/Restic/Combined init
+restic -r /Volumes/63614TB/COMBINED_BACKUP/Restic/Combined --password-file=<(echo "asdf123") --verbose backup "/Volumes/Seagate" \
+    --exclude '**/node_modules' \
+    --exclude '**/.venv' \
+    --exclude '**/venv*' \
+    --exclude '**/*.tmp' \
+    --exclude '**/cache' \
+    --exclude '**/.git' \
+    --exclude '**/.DS_Store'
